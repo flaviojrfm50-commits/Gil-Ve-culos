@@ -55,34 +55,41 @@ body{
   color:#1f2a44;
 }
 
-/* BANNER */
+/* ================= BANNER ================= */
 .banner{
   width:100%;
-  height:38vh;               /* desktop */
+  height:42vh;
   margin:15px;
   border-radius:14px;
   overflow:hidden;
-  background-size:cover;
+  background-size:contain;
   background-position:center;
   background-repeat:no-repeat;
   background-color:#0d1b3d;
   position:relative;
-  transition:background-position .6s ease, transform .6s ease;
+  border:2px solid rgba(120,180,255,.45);
+  transition:
+    background-position .2s ease-out,
+    transform .4s ease,
+    box-shadow .4s ease;
 }
 
-/* OVERLAY */
+/* overlay */
 .banner::after{
   content:"";
   position:absolute;
   inset:0;
   background:linear-gradient(to right,rgba(0,0,0,.35),rgba(0,0,0,.05));
+  pointer-events:none;
 }
 
-/* HOVER PC */
+/* hover banner PC */
 @media (min-width:769px){
   .banner:hover{
-    background-position:center 60%;
-    transform:scale(1.02);
+    box-shadow:
+      0 0 0 2px rgba(120,180,255,.7),
+      0 0 35px rgba(120,180,255,.5);
+    transform:scale(1.015);
   }
 }
 
@@ -95,7 +102,7 @@ body{
   }
 }
 
-/* MENU */
+/* ================= MENU ================= */
 .menu{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -104,13 +111,19 @@ body{
 }
 
 .app-btn{
+  position:relative;
   background:#1f2a44;
   border-radius:14px;
   padding:18px 10px;
   text-align:center;
   text-decoration:none;
   color:#fff;
-  transition:.3s;
+  border:1.5px solid rgba(255,255,255,.08);
+  transition:
+    background .3s ease,
+    transform .3s ease,
+    box-shadow .3s ease,
+    border-color .3s ease;
 }
 
 .app-btn i{
@@ -124,12 +137,36 @@ body{
   font-weight:600;
 }
 
-.app-btn:hover{
-  background:#e30613;
+/* linha interna */
+.app-btn::after{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.04);
+  pointer-events:none;
 }
 
+/* hover cards */
+@media (min-width:769px){
+  .app-btn:hover{
+    transform:translateY(-2px);
+    border-color:rgba(120,180,255,.5);
+    box-shadow:0 8px 22px rgba(0,0,0,.25);
+  }
+}
+
+/* destaque vermelho */
 .destaque{
   background:linear-gradient(135deg,#e30613,#b0040f);
+  border:1.5px solid rgba(255,255,255,.15);
+}
+
+@media (min-width:769px){
+  .destaque:hover{
+    border-color:rgba(255,200,200,.8);
+    box-shadow:0 10px 26px rgba(227,6,19,.45);
+  }
 }
 </style>
 </head>
@@ -186,14 +223,29 @@ body{
 </section>
 
 <script>
-// IMAGENS
-const imagens=[
+// IMAGENS DO BANNER
+const imagens = [
   "imagens/01.jpg"
 ];
 
 // IMAGEM ALEATÓRIA
+const banner = document.getElementById("banner");
 const aleatoria = imagens[Math.floor(Math.random()*imagens.length)];
-document.getElementById("banner").style.backgroundImage = `url('${aleatoria}')`;
+banner.style.backgroundImage = `url('${aleatoria}')`;
+
+// PARALLAX COM MOUSE (PC)
+if(window.innerWidth > 768){
+  banner.addEventListener("mousemove", e => {
+    const rect = banner.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 20;
+    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 20;
+    banner.style.backgroundPosition = `${50 + x}% ${50 + y}%`;
+  });
+
+  banner.addEventListener("mouseleave", () => {
+    banner.style.backgroundPosition = "center";
+  });
+}
 </script>
 
 </body>
