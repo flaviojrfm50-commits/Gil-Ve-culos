@@ -2,249 +2,199 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Gil Veículos</title>
+<title>Locadora</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+:root{
+  --primaria:#e30613;
+  --bg:#f4f4f4;
+}
+
 *{
-  margin:0;
-  padding:0;
   box-sizing:border-box;
-  font-family:'Segoe UI',Arial,sans-serif
+  font-family:Arial,sans-serif;
 }
 
 body{
-  background:#f4f4f4;
-  color:#000
+  margin:0;
+  background:var(--bg);
 }
 
-/* TOPO */
-.topo{
-  background:#fff;
-  padding:14px 18px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  border-bottom:3px solid #e30613;
-}
-
-.logo{
-  display:flex;
-  gap:6px;
-  white-space:nowrap;
-}
-
-.logo .gil{
-  color:#e30613;
-  font-size:26px;
-  font-weight:700;
-  font-style:italic;
-}
-
-.logo .veiculos{
-  color:#000;
-  font-size:26px;
-  font-weight:700;
-}
-
-.topo i{
-  font-size:26px;
-  color:#1f2a44;
-}
-
-/* ================= BANNER ================= */
+/* BANNER */
 .banner{
   width:100%;
-  height:42vh;
-  margin:15px;
-  border-radius:14px;
-  overflow:hidden;
-  background-size:contain;
-  background-position:center;
-  background-repeat:no-repeat;
-  background-color:#0d1b3d;
-  position:relative;
-  border:2px solid rgba(120,180,255,.45);
-  transition:
-    background-position .2s ease-out,
-    transform .4s ease,
-    box-shadow .4s ease;
+  background:#020617;
 }
-
-/* overlay */
-.banner::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(to right,rgba(0,0,0,.35),rgba(0,0,0,.05));
-  pointer-events:none;
-}
-
-/* hover banner PC */
-@media (min-width:769px){
-  .banner:hover{
-    box-shadow:
-      0 0 0 2px rgba(120,180,255,.7),
-      0 0 35px rgba(120,180,255,.5);
-    transform:scale(1.015);
-  }
-}
-
-/* MOBILE */
-@media (max-width:768px){
-  .banner{
-    height:26vh;
-    background-size:contain;
-    background-position:center;
-  }
-}
-
-/* ================= MENU ================= */
-.menu{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-  padding:15px;
-}
-
-.app-btn{
-  position:relative;
-  background:#1f2a44;
-  border-radius:14px;
-  padding:18px 10px;
-  text-align:center;
-  text-decoration:none;
-  color:#fff;
-  border:1.5px solid rgba(255,255,255,.08);
-  transition:
-    background .3s ease,
-    transform .3s ease,
-    box-shadow .3s ease,
-    border-color .3s ease;
-}
-
-.app-btn i{
-  font-size:28px;
+.banner img{
+  width:100%;
+  height:360px;
+  object-fit:contain; /* 🔥 logo como banner */
   display:block;
-  margin-bottom:8px;
 }
 
-.app-btn span{
-  font-size:15px;
-  font-weight:600;
+@media(max-width:600px){
+  .banner img{height:220px}
 }
 
-/* linha interna */
-.app-btn::after{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,.04);
-  pointer-events:none;
+/* LISTA */
+.lista{
+  max-width:1200px;
+  margin:20px auto;
+  padding:16px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:20px;
 }
 
-/* hover cards */
-@media (min-width:769px){
-  .app-btn:hover{
-    transform:translateY(-2px);
-    border-color:rgba(120,180,255,.5);
-    box-shadow:0 8px 22px rgba(0,0,0,.25);
-  }
+.card{
+  background:#fff;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 10px 25px rgba(0,0,0,.12);
+  display:flex;
+  flex-direction:column;
 }
 
-/* destaque vermelho */
-.destaque{
-  background:linear-gradient(135deg,#e30613,#b0040f);
-  border:1.5px solid rgba(255,255,255,.15);
+.card img{
+  width:100%;
+  height:180px;
+  object-fit:contain;
+  background:#f1f1f1;
 }
 
-@media (min-width:769px){
-  .destaque:hover{
-    border-color:rgba(255,200,200,.8);
-    box-shadow:0 10px 26px rgba(227,6,19,.45);
-  }
+.card .info{
+  padding:14px;
+  flex:1;
+}
+
+.card h3{margin:0}
+
+.preco{
+  font-weight:700;
+  margin:6px 0;
+}
+
+.status{
+  font-weight:700;
+  margin-top:4px;
+}
+.status.disponivel{color:#16a34a}
+.status.alugado{color:#e30613}
+
+.btn{
+  margin:12px;
+  background:var(--primaria);
+  color:#fff;
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
+  font-weight:700;
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<header class="topo">
-  <div class="logo">
-    <span class="gil">Gil</span>
-    <span class="veiculos">Veículos</span>
-  </div>
-  <i class="fas fa-car"></i>
+<header class="banner">
+  <img id="bannerImg" alt="Banner">
 </header>
 
-<!-- BANNER -->
-<section class="banner" id="banner"></section>
-
-<!-- MENU -->
-<section class="menu">
-  <a href="seguros.html" class="app-btn">
-    <i class="fas fa-shield-halved"></i>
-    <span>Seguros</span>
-  </a>
-
-  <a href="locacao.html" class="app-btn">
-    <i class="fas fa-key"></i>
-    <span>Locação</span>
-  </a>
-
-  <a href="#" class="app-btn destaque">
-    <i class="fas fa-car-side"></i>
-    <span>Estoque</span>
-  </a>
-
-  <a href="#" class="app-btn">
-    <i class="fas fa-file-signature"></i>
-    <span>Financiamento</span>
-  </a>
-
-  <a href="#" class="app-btn">
-    <i class="fas fa-exchange-alt"></i>
-    <span>Troca</span>
-  </a>
-
-  <a href="#" class="app-btn">
-    <i class="fas fa-phone"></i>
-    <span>Contato</span>
-  </a>
-
-  <a href="https://wa.me/5587981221150" class="app-btn destaque">
-    <i class="fab fa-whatsapp"></i>
-    <span>WhatsApp</span>
-  </a>
-</section>
+<section class="lista" id="listaVeiculos"></section>
 
 <script>
-// IMAGENS DO BANNER
-const imagens = [
-  "imagens/01.jpg"
-];
+const params = new URLSearchParams(window.location.search);
+const appId = params.get("app_id");
 
-// IMAGEM ALEATÓRIA
-const banner = document.getElementById("banner");
-const aleatoria = imagens[Math.floor(Math.random()*imagens.length)];
-banner.style.backgroundImage = `url('${aleatoria}')`;
+if(!appId){
+  document.body.innerHTML = `
+    <h2 style="padding:30px;text-align:center">
+      Locadora não identificada
+    </h2>
+  `;
+}else{
+  iniciarApp(appId);
+}
 
-// PARALLAX COM MOUSE (PC)
-if(window.innerWidth > 768){
-  banner.addEventListener("mousemove", e => {
-    const rect = banner.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 20;
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * 20;
-    banner.style.backgroundPosition = `${50 + x}% ${50 + y}%`;
-  });
+async function iniciarApp(APP_ID){
 
-  banner.addEventListener("mouseleave", () => {
-    banner.style.backgroundPosition = "center";
-  });
+  const sb = supabase.createClient(
+    "https://pdajixsoowcyhnjwhgpc.supabase.co",
+    "sb_publishable_LatlFlcxk6IchHe3RNmfwA_9Oq4EsZw"
+  );
+
+  /* CONFIG SITE */
+  async function carregarConfig(){
+    const { data } = await sb
+      .from("config_site")
+      .select("nome_site,logo_url,cor_primaria")
+      .eq("app_id", APP_ID)
+      .single();
+
+    if(!data) return;
+
+    document.title = data.nome_site || "Locadora";
+    document.documentElement.style.setProperty(
+      "--primaria",
+      data.cor_primaria || "#e30613"
+    );
+
+    if(data.logo_url){
+      document.getElementById("bannerImg").src = data.logo_url;
+    }
+  }
+
+  function formatarData(d){
+    return new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
+  }
+
+  /* VEÍCULOS */
+  async function carregarVeiculos(){
+    const { data } = await sb
+      .from("veiculos")
+      .select("id,modelo,diaria,status,data_fim,foto_url")
+      .eq("app_id", APP_ID);
+
+    const lista = document.getElementById("listaVeiculos");
+    lista.innerHTML = "";
+
+    if(!data || !data.length){
+      lista.innerHTML = "<p>Nenhum veículo cadastrado.</p>";
+      return;
+    }
+
+    data.forEach(v=>{
+      const alugado = v.status === "alugado" && v.data_fim;
+
+      lista.innerHTML += `
+        <div class="card">
+          <img src="${v.foto_url || 'https://via.placeholder.com/400x200?text=Veículo'}">
+          <div class="info">
+            <h3>${v.modelo}</h3>
+            <div class="preco">R$ ${v.diaria} / diária</div>
+            ${
+              alugado
+                ? `<div class="status alugado">🔒 Alugado até ${formatarData(v.data_fim)}</div>`
+                : `<div class="status disponivel">✅ Disponível</div>`
+            }
+          </div>
+          <div class="btn" onclick="verVeiculo('${v.id}')">
+            Ver detalhes
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  window.verVeiculo = function(id){
+    location.href = `./veiculo.html?app_id=${APP_ID}&id=${id}`;
+  };
+
+  await carregarConfig();
+  await carregarVeiculos();
 }
 </script>
 
