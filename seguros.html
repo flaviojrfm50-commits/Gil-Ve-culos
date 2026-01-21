@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Planos - Gil Seguros</title>
+<title>Gil Seguros</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -20,93 +20,110 @@ body{
   color:#fff
 }
 
-/* HEADER */
+/* TOPO */
 header{
   background:linear-gradient(90deg,#081a2f,#0d2b4f);
-  padding:15px;
+  padding:14px 18px;
   display:flex;
+  justify-content:space-between;
   align-items:center;
-  gap:12px;
   border-bottom:3px solid #e30613;
 }
 
-header span{
-  font-size:20px;
+.logo{
+  font-size:22px;
   font-weight:700;
 }
 
-/* VOLTAR */
-.voltar{
-  margin:15px;
-  display:inline-block;
-  color:#e6eef8;
-  text-decoration:none;
-  border:1px solid #2f5fa7;
-  padding:8px 14px;
-  border-radius:12px;
-  transition:.3s;
+.logo span{
+  color:#e30613;
+  font-style:italic;
 }
 
-.voltar:hover{
-  background:#e30613;
-  border-color:#e30613;
-  color:#fff;
+header i{
+  font-size:22px;
 }
 
-/* PLANOS */
-.planos{
-  padding:15px;
-  display:grid;
-  gap:16px;
-}
-
-.plano{
+/* BANNER */
+.banner{
+  padding:30px 20px;
   background:linear-gradient(135deg,#0d2b4f,#133a66);
-  border:1px solid #2f5fa7;
-  border-radius:18px;
-  padding:18px;
-  box-shadow:0 10px 25px rgba(0,0,0,.35);
-  transition:.3s;
 }
 
-.plano:hover{
-  transform:translateY(-3px);
-  background:linear-gradient(135deg,#133a66,#1a4f8a);
+.banner h1{
+  font-size:22px;
+  margin-bottom:10px;
 }
 
-.plano h3{
-  margin-bottom:8px;
-  color:#e6eef8;
-  font-size:18px;
-}
-
-.plano p{
+.banner p{
   font-size:14px;
-  margin-bottom:8px;
-  color:#cfe3ff;
+  color:#dbe9ff;
+  margin-bottom:16px;
 }
 
-.plano .preco{
-  font-size:18px;
-  font-weight:700;
-  margin-bottom:12px;
+.banner a{
+  display:inline-block;
+  background:#e30613;
   color:#fff;
-}
-
-.plano button{
-  background:linear-gradient(135deg,#e30613,#b0040f);
-  color:#fff;
-  border:none;
   padding:12px 18px;
   border-radius:14px;
-  cursor:pointer;
+  text-decoration:none;
   font-weight:700;
-  transition:.3s;
-  width:100%;
 }
 
-.plano button:hover{
-  opacity:.9;
+/* SERVIÇOS */
+.servicos{
+  padding:18px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+
+.card{
+  background:#0d2b4f;
+  border-radius:16px;
+  padding:18px 10px;
+  text-align:center;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+  transition:.3s;
+}
+
+.card:hover{
+  transform:translateY(-3px);
+  background:#133a66;
+}
+
+.card i{
+  font-size:26px;
+  margin-bottom:8px;
+  color:#e6eef8;
+}
+
+.card span{
+  display:block;
+  font-size:14px;
+  font-weight:600;
+}
+
+/* CTA FINAL */
+.cta{
+  padding:25px 18px;
+  text-align:center;
+}
+
+.cta h2{
+  font-size:18px;
+  margin-bottom:10px;
+}
+
+.cta a{
+  display:block;
+  background:linear-gradient(135deg,#e30613,#b0040f);
+  padding:14px;
+  border-radius:16px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
 }
 </style>
 </head>
@@ -114,61 +131,51 @@ header span{
 <body>
 
 <header>
+  <div class="logo"><span>Gil</span> Seguros</div>
   <i class="fas fa-shield-halved"></i>
-  <span>Planos – Gil Seguros</span>
 </header>
 
-<a href="index.html" class="voltar">
-  <i class="fas fa-arrow-left"></i> Voltar
-</a>
+<section class="banner">
+  <h1>Proteção que anda com você</h1>
+  <p>Seguro auto, moto, caminhão, residencial e vida. Atendimento rápido e sem burocracia.</p>
+  <a href="https://wa.me/5587981221150">Cotar agora no WhatsApp</a>
+</section>
 
-<section class="planos">
-
-  <div class="plano">
-    <h3><i class="fas fa-car"></i> Seguro Auto Básico</h3>
-    <p>✔ Roubo e furto</p>
-    <p>✔ Assistência 24h</p>
-    <p>✔ Guincho até 100km</p>
-    <div class="preco">A partir de R$ 79,90 / mês</div>
-    <button>Cotar no WhatsApp</button>
+<section class="servicos">
+  <div class="card">
+    <i class="fas fa-car"></i>
+    <span>Seguro Auto</span>
   </div>
 
-  <div class="plano">
-    <h3><i class="fas fa-car-side"></i> Seguro Auto Completo</h3>
-    <p>✔ Colisão, roubo e furto</p>
-    <p>✔ Carro reserva</p>
-    <p>✔ Assistência residencial</p>
-    <div class="preco">A partir de R$ 129,90 / mês</div>
-    <button>Cotar no WhatsApp</button>
+  <div class="card">
+    <i class="fas fa-motorcycle"></i>
+    <span>Seguro Moto</span>
   </div>
 
-  <div class="plano">
-    <h3><i class="fas fa-star"></i> Seguro Premium Total</h3>
-    <p>✔ Cobertura total</p>
-    <p>✔ Vidros, faróis e retrovisores</p>
-    <p>✔ Proteção para terceiros</p>
-    <div class="preco">A partir de R$ 199,90 / mês</div>
-    <button>Cotar no WhatsApp</button>
+  <div class="card">
+    <i class="fas fa-truck"></i>
+    <span>Seguro Caminhão</span>
   </div>
 
-  <div class="plano">
-    <h3><i class="fas fa-motorcycle"></i> Seguro Moto</h3>
-    <p>✔ Roubo e furto</p>
-    <p>✔ Assistência 24h</p>
-    <p>✔ Guincho</p>
-    <div class="preco">A partir de R$ 59,90 / mês</div>
-    <button>Cotar no WhatsApp</button>
+  <div class="card">
+    <i class="fas fa-house"></i>
+    <span>Seguro Residencial</span>
   </div>
 
-  <div class="plano">
-    <h3><i class="fas fa-truck"></i> Seguro Caminhão</h3>
-    <p>✔ Proteção do veículo</p>
-    <p>✔ Carga e terceiros</p>
-    <p>✔ Assistência especializada</p>
-    <div class="preco">Sob consulta</div>
-    <button>Falar com Corretor</button>
+  <div class="card">
+    <i class="fas fa-heart"></i>
+    <span>Seguro de Vida</span>
   </div>
 
+  <div class="card">
+    <i class="fas fa-file-contract"></i>
+    <span>Cotar Seguro</span>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Fale agora com um corretor</h2>
+  <a href="https://wa.me/5587981221150">Atendimento via WhatsApp</a>
 </section>
 
 </body>
