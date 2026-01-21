@@ -57,13 +57,17 @@ body{
 
 /* BANNER */
 .banner{
-  height:220px;
+  width:100%;
+  height:38vh;               /* desktop */
   margin:15px;
   border-radius:14px;
   overflow:hidden;
   background-size:cover;
   background-position:center;
+  background-repeat:no-repeat;
+  background-color:#0d1b3d;
   position:relative;
+  transition:background-position .6s ease, transform .6s ease;
 }
 
 /* OVERLAY */
@@ -72,6 +76,23 @@ body{
   position:absolute;
   inset:0;
   background:linear-gradient(to right,rgba(0,0,0,.35),rgba(0,0,0,.05));
+}
+
+/* HOVER PC */
+@media (min-width:769px){
+  .banner:hover{
+    background-position:center 60%;
+    transform:scale(1.02);
+  }
+}
+
+/* MOBILE */
+@media (max-width:768px){
+  .banner{
+    height:26vh;
+    background-size:contain;
+    background-position:center;
+  }
 }
 
 /* MENU */
@@ -129,13 +150,14 @@ body{
 <!-- MENU -->
 <section class="menu">
   <a href="seguros.html" class="app-btn">
-  <i class="fas fa-shield-halved"></i>
-  <span>Seguros</span>
-</a>
-<a href="locacao.html" class="app-btn">
-  <i class="fas fa-key"></i>
-  <span>Locação</span>
-</a>
+    <i class="fas fa-shield-halved"></i>
+    <span>Seguros</span>
+  </a>
+
+  <a href="locacao.html" class="app-btn">
+    <i class="fas fa-key"></i>
+    <span>Locação</span>
+  </a>
 
   <a href="#" class="app-btn destaque">
     <i class="fas fa-car-side"></i>
@@ -164,15 +186,14 @@ body{
 </section>
 
 <script>
-// IMAGENS LOCAIS
+// IMAGENS
 const imagens=[
-  "imagens/01.jpg",
- 
+  "imagens/01.jpg"
 ];
 
-// EMBARALHA
+// IMAGEM ALEATÓRIA
 const aleatoria = imagens[Math.floor(Math.random()*imagens.length)];
-document.getElementById("banner").style.backgroundImage=`url('${aleatoria}')`;
+document.getElementById("banner").style.backgroundImage = `url('${aleatoria}')`;
 </script>
 
 </body>
