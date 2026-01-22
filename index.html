@@ -1,9 +1,20 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Gil Veículos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ===== PWA ===== -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f2a44">
+<meta name="background-color" content="#1f2a44">
+
+<!-- iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gil Veículos">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
@@ -100,7 +111,7 @@ body{
   background:linear-gradient(135deg,#e30613,#b0040f);
 }
 
-/* ===== BOX (SEGUROS / LOCAÇÃO) ===== */
+/* ===== BOX ===== */
 .box{
   display:none;
   margin:0 15px 25px;
@@ -201,7 +212,7 @@ footer{
   font-weight:600;
 }
 
-/* ===== FIX LOGO MOBILE ===== */
+/* ===== MOBILE ===== */
 @media (max-width:480px){
   .logo .gil,
   .logo .veiculos{
@@ -256,12 +267,10 @@ footer{
   </a>
 </section>
 
-<!-- SEGUROS -->
 <section class="box" id="box-seguros">
   <iframe src="seguros.html" loading="lazy"></iframe>
 </section>
 
-<!-- LOCAÇÃO -->
 <section class="box" id="box-locacao">
   <iframe
     src="https://anajuliafarias659-cloud.github.io/ffsolucoes/locadora/public/index.html?app_id=f128a47d-a635-4824-bfd9-d709ffc3d288"
@@ -269,7 +278,6 @@ footer{
   </iframe>
 </section>
 
-<!-- MODAL WHATS -->
 <div id="modalWhats">
   <div class="modal-box">
     <button class="fechar" onclick="fecharWhats()">×</button>
@@ -315,25 +323,17 @@ const boxLocacao = document.getElementById("box-locacao");
 btnSeguros.onclick = e => {
   e.preventDefault();
   boxLocacao.style.display = "none";
-
   const aberto = boxSeguros.style.display === "block";
   boxSeguros.style.display = aberto ? "none" : "block";
-
-  if(!aberto){
-    boxSeguros.scrollIntoView({ behavior:"smooth", block:"start" });
-  }
+  if(!aberto) boxSeguros.scrollIntoView({ behavior:"smooth" });
 };
 
 btnLocacao.onclick = e => {
   e.preventDefault();
   boxSeguros.style.display = "none";
-
   const aberto = boxLocacao.style.display === "block";
   boxLocacao.style.display = aberto ? "none" : "block";
-
-  if(!aberto){
-    boxLocacao.scrollIntoView({ behavior:"smooth", block:"start" });
-  }
+  if(!aberto) boxLocacao.scrollIntoView({ behavior:"smooth" });
 };
 
 function abrirWhats(){ modalWhats.style.display="block"; }
@@ -364,6 +364,13 @@ Assunto: ${wAssunto.value}`;
   );
 
   fecharWhats();
+}
+
+/* ===== REGISTRO PWA ===== */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js");
+  });
 }
 </script>
 
