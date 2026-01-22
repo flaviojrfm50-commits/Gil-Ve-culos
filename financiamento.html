@@ -202,6 +202,12 @@ body{
     <input id="modelo">
   </div>
 
+  <!-- NOVO CAMPO -->
+  <div class="campo">
+    <label>Placa do veículo</label>
+    <input id="placa" maxlength="8" placeholder="ABC1D23 ou ABC-1234">
+  </div>
+
   <div class="campo">
     <label>Valor aproximado</label>
     <input id="valor">
@@ -227,41 +233,50 @@ body{
 // ===== MÁSCARAS =====
 cpf.addEventListener("input", () => {
   cpf.value = cpf.value
-    .replace(/\D/g, "")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    .replace(/\D/g,"")
+    .replace(/(\d{3})(\d)/,"$1.$2")
+    .replace(/(\d{3})(\d)/,"$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/,"$1-$2");
 });
 
 rg.addEventListener("input", () => {
   rg.value = rg.value
-    .replace(/\D/g, "")
-    .replace(/(\d{2})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1})$/, "$1-$2");
+    .replace(/\D/g,"")
+    .replace(/(\d{2})(\d)/,"$1.$2")
+    .replace(/(\d{3})(\d)/,"$1.$2")
+    .replace(/(\d{3})(\d)$/,"$1-$2");
 });
 
 cep.addEventListener("input", () => {
   cep.value = cep.value
-    .replace(/\D/g, "")
-    .replace(/(\d{5})(\d)/, "$1-$2");
+    .replace(/\D/g,"")
+    .replace(/(\d{5})(\d)/,"$1-$2");
 });
 
-// ===== BUSCA CEP (VIACEP) =====
-cep.addEventListener("blur", () => {
-  const cepLimpo = cep.value.replace(/\D/g, "");
-  if (cepLimpo.length !== 8) return;
+// PLACA (ANTIGA + MERCOSUL)
+placa.addEventListener("input", () => {
+  placa.value = placa.value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g,"")
+    .replace(/^([A-Z]{3})(\d)/,"$1-$2")
+    .replace(/^([A-Z]{3})-(\d)([A-Z])(\d{2})$/,"$1$2$3$4");
+});
 
-  fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
+// BUSCA CEP
+cep.addEventListener("blur", () => {
+  const c = cep.value.replace(/\D/g,"");
+  if(c.length !== 8) return;
+
+  fetch(`https://viacep.com.br/ws/${c}/json/`)
     .then(r => r.json())
     .then(d => {
-      if (!d.erro) {
+      if(!d.erro){
         endereco.value = `${d.logradouro}, ${d.bairro}, ${d.localidade} - ${d.uf}`;
       }
     });
 });
 
-// ===== ENVIO WHATS =====
+// ENVIO WHATS
 function enviarWhats(){
   const v = id => document.getElementById(id).value;
 
@@ -278,6 +293,7 @@ function enviarWhats(){
 
 🚗 Veículo: ${v("tipo")}
 📌 Modelo: ${v("modelo")}
+🪪 Placa: ${v("placa")}
 💵 Valor: ${v("valor")}
 💳 Entrada: ${v("entrada")}
 
