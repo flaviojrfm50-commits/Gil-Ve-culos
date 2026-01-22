@@ -8,72 +8,41 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Segoe UI',Arial,sans-serif
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
 
 body{
   background:#081a2f;
-  color:#fff
+  color:#fff;
 }
 
-/* TOPO */
+/* ===== TOPO SIMPLES E FORTE ===== */
 header{
-  background:linear-gradient(90deg,#081a2f,#0d2b4f);
-  padding:14px 18px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  background:linear-gradient(180deg,#0d2b4f,#081a2f);
+  padding:36px 20px 28px;
+  text-align:center;
   border-bottom:3px solid #e30613;
 }
 
-.logo{
-  font-size:22px;
-  font-weight:700;
+header h1{
+  font-size:34px;
+  font-weight:800;
+  letter-spacing:1px;
 }
 
-.logo span{
+header h1 span{
   color:#e30613;
   font-style:italic;
 }
 
-header i{
-  font-size:22px;
-}
-
-/* BANNER */
-.banner{
-  padding:30px 20px;
-  background:linear-gradient(135deg,#0d2b4f,#133a66);
-}
-
-.banner h1{
-  font-size:22px;
-  margin-bottom:10px;
-}
-
-.banner p{
+header p{
+  margin-top:8px;
   font-size:14px;
   color:#dbe9ff;
-  margin-bottom:16px;
 }
 
-.banner a{
-  display:inline-block;
-  background:#e30613;
-  color:#fff;
-  padding:12px 18px;
-  border-radius:14px;
-  text-decoration:none;
-  font-weight:700;
-}
-
-/* SERVIÇOS */
+/* ===== CARDS ===== */
 .servicos{
-  padding:18px;
+  padding:22px 18px;
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:14px;
@@ -81,49 +50,95 @@ header i{
 
 .card{
   background:#0d2b4f;
-  border-radius:16px;
-  padding:18px 10px;
+  border-radius:18px;
+  padding:22px 10px;
   text-align:center;
-  box-shadow:0 8px 20px rgba(0,0,0,.35);
-  transition:.3s;
+  box-shadow:0 10px 25px rgba(0,0,0,.35);
+  transition:.25s;
+  cursor:pointer;
 }
 
 .card:hover{
-  transform:translateY(-3px);
+  transform:translateY(-4px);
   background:#133a66;
 }
 
 .card i{
-  font-size:26px;
+  font-size:28px;
   margin-bottom:8px;
-  color:#e6eef8;
 }
 
 .card span{
-  display:block;
   font-size:14px;
   font-weight:600;
 }
 
-/* CTA FINAL */
-.cta{
-  padding:25px 18px;
-  text-align:center;
+/* ===== FORMULÁRIO ===== */
+.formulario{
+  display:none;
+  margin:22px 18px;
+  background:linear-gradient(135deg,#0d2b4f,#133a66);
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,.4);
 }
 
-.cta h2{
+.form-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.form-header i{
+  color:#e30613;
+  font-size:22px;
+}
+
+.form-header h2{
   font-size:18px;
-  margin-bottom:10px;
 }
 
-.cta a{
+label{
+  font-size:13px;
+  margin-top:12px;
   display:block;
-  background:linear-gradient(135deg,#e30613,#b0040f);
-  padding:14px;
-  border-radius:16px;
+  color:#dbe9ff;
+}
+
+input,textarea{
+  width:100%;
+  padding:12px 14px;
+  border-radius:14px;
+  border:none;
+  background:#081a2f;
   color:#fff;
-  text-decoration:none;
+  margin-top:6px;
+  font-size:14px;
+}
+
+textarea{
+  min-height:100px;
+  resize:none;
+}
+
+.extra{display:none}
+
+.btn-enviar{
+  width:100%;
+  margin-top:16px;
+  padding:14px;
+  border:none;
+  border-radius:16px;
+  background:linear-gradient(135deg,#25D366,#128C7E);
+  color:#fff;
   font-weight:700;
+  font-size:15px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -131,52 +146,106 @@ header i{
 <body>
 
 <header>
-  <div class="logo"><span>Gil</span> Seguros</div>
-  <i class="fas fa-shield-halved"></i>
+  <h1><span>Gil</span> Seguros</h1>
+  <p>Seguro auto, moto, residencial e vida • Cotação rápida</p>
 </header>
 
-<section class="banner">
-  <h1>Proteção que anda com você</h1>
-  <p>Seguro auto, moto, caminhão, residencial e vida. Atendimento rápido e sem burocracia.</p>
-  <a href="https://wa.me/5587981221150">Cotar agora no WhatsApp</a>
-</section>
-
-<section class="servicos">
-  <div class="card">
+<!-- SERVIÇOS -->
+<section class="servicos" id="servicos">
+  <div class="card" data-tipo="Seguro Auto">
     <i class="fas fa-car"></i>
     <span>Seguro Auto</span>
   </div>
 
-  <div class="card">
+  <div class="card" data-tipo="Seguro Moto">
     <i class="fas fa-motorcycle"></i>
     <span>Seguro Moto</span>
   </div>
 
-  <div class="card">
-    <i class="fas fa-truck"></i>
-    <span>Seguro Caminhão</span>
-  </div>
-
-  <div class="card">
+  <div class="card" data-tipo="Seguro Residencial">
     <i class="fas fa-house"></i>
     <span>Seguro Residencial</span>
   </div>
 
-  <div class="card">
+  <div class="card" data-tipo="Seguro de Vida">
     <i class="fas fa-heart"></i>
     <span>Seguro de Vida</span>
   </div>
+</section>
 
-  <div class="card">
+<!-- FORMULÁRIO -->
+<section class="formulario" id="formulario">
+  <div class="form-header">
     <i class="fas fa-file-contract"></i>
-    <span>Cotar Seguro</span>
+    <h2 id="tituloForm">Solicitar Seguro</h2>
   </div>
+
+  <label>Nome</label>
+  <input id="nome" placeholder="Seu nome">
+
+  <label>Telefone</label>
+  <input id="telefone" placeholder="WhatsApp">
+
+  <div class="extra">
+    <label>Placa</label>
+    <input id="placa">
+
+    <label>Modelo</label>
+    <input id="modelo">
+
+    <label>Ano</label>
+    <input id="ano">
+
+    <label>Valor estimado</label>
+    <input id="valor">
+  </div>
+
+  <label>Descrição do bem</label>
+  <textarea id="descricao"></textarea>
+
+  <button class="btn-enviar" onclick="enviarWhats()">
+    <i class="fab fa-whatsapp"></i>
+    Enviar para WhatsApp
+  </button>
 </section>
 
-<section class="cta">
-  <h2>Fale agora com um corretor</h2>
-  <a href="https://wa.me/5587981221150">Atendimento via WhatsApp</a>
-</section>
+<script>
+let tipoAtual = "";
+
+document.querySelectorAll(".card").forEach(card=>{
+  card.onclick = ()=>{
+    tipoAtual = card.dataset.tipo;
+    tituloForm.innerText = tipoAtual;
+    formulario.style.display = "block";
+
+    document.querySelector(".extra").style.display =
+      (tipoAtual.includes("Auto") || tipoAtual.includes("Moto"))
+      ? "block" : "none";
+
+    formulario.scrollIntoView({behavior:"smooth"});
+  }
+});
+
+function enviarWhats(){
+  const msg = `📄 *Cotação de Seguro*
+🛡️ Tipo: ${tipoAtual}
+👤 Nome: ${nome.value}
+📞 Telefone: ${telefone.value}
+
+🚗 Placa: ${placa.value}
+🚘 Modelo: ${modelo.value}
+📆 Ano: ${ano.value}
+💰 Valor: ${valor.value}
+
+📝 Descrição:
+${descricao.value}`;
+
+  window.open(
+    "https://wa.me/5587981221150?text="+encodeURIComponent(msg),
+    "_blank"
+  );
+}
+</script>
 
 </body>
 </html>
