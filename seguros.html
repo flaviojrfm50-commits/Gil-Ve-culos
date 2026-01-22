@@ -15,7 +15,7 @@ body{
   color:#fff;
 }
 
-/* ===== TOPO SIMPLES E FORTE ===== */
+/* ===== TOPO ===== */
 header{
   background:linear-gradient(180deg,#0d2b4f,#081a2f);
   padding:36px 20px 28px;
@@ -73,7 +73,7 @@ header p{
   font-weight:600;
 }
 
-/* ===== FORMULÁRIO ===== */
+/* ===== FORM ===== */
 .formulario{
   display:none;
   margin:22px 18px;
@@ -95,10 +95,6 @@ header p{
   font-size:22px;
 }
 
-.form-header h2{
-  font-size:18px;
-}
-
 label{
   font-size:13px;
   margin-top:12px;
@@ -106,7 +102,7 @@ label{
   color:#dbe9ff;
 }
 
-input,textarea{
+input, select, textarea{
   width:100%;
   padding:12px 14px;
   border-radius:14px;
@@ -150,8 +146,7 @@ textarea{
   <p>Seguro auto, moto, residencial e vida • Cotação rápida</p>
 </header>
 
-<!-- SERVIÇOS -->
-<section class="servicos" id="servicos">
+<section class="servicos">
   <div class="card" data-tipo="Seguro Auto">
     <i class="fas fa-car"></i>
     <span>Seguro Auto</span>
@@ -173,7 +168,6 @@ textarea{
   </div>
 </section>
 
-<!-- FORMULÁRIO -->
 <section class="formulario" id="formulario">
   <div class="form-header">
     <i class="fas fa-file-contract"></i>
@@ -181,10 +175,10 @@ textarea{
   </div>
 
   <label>Nome</label>
-  <input id="nome" placeholder="Seu nome">
+  <input id="nome">
 
   <label>Telefone</label>
-  <input id="telefone" placeholder="WhatsApp">
+  <input id="telefone">
 
   <div class="extra">
     <label>Placa</label>
@@ -198,6 +192,26 @@ textarea{
 
     <label>Valor estimado</label>
     <input id="valor">
+
+    <label>CEP de pernoite do veículo</label>
+    <input id="cep">
+
+    <label>Estado civil</label>
+    <select id="estadoCivil">
+      <option value="">Selecione</option>
+      <option>Solteiro(a)</option>
+      <option>Casado(a)</option>
+      <option>União estável</option>
+      <option>Divorciado(a)</option>
+      <option>Viúvo(a)</option>
+    </select>
+
+    <label>Uso do veículo</label>
+    <select id="usoVeiculo">
+      <option value="">Selecione</option>
+      <option>Particular</option>
+      <option>Comercial</option>
+    </select>
   </div>
 
   <label>Descrição do bem</label>
@@ -236,6 +250,9 @@ function enviarWhats(){
 🚘 Modelo: ${modelo.value}
 📆 Ano: ${ano.value}
 💰 Valor: ${valor.value}
+📍 CEP Pernoite: ${cep.value}
+💍 Estado civil: ${estadoCivil.value}
+🚦 Uso do veículo: ${usoVeiculo.value}
 
 📝 Descrição:
 ${descricao.value}`;
