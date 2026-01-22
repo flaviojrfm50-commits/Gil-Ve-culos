@@ -34,7 +34,6 @@ body{
 .logo{
   display:flex;
   gap:6px;
-  white-space:nowrap;
 }
 
 .logo .gil{
@@ -64,16 +63,13 @@ body{
   width:100%;
   height:42vh;
   border-radius:14px;
-  overflow:hidden;
   background:url("imagens/01.jpg") center/contain no-repeat;
   background-color:#0d1b3d;
   border:2px solid rgba(120,180,255,.45);
 }
 
 @media(max-width:768px){
-  .banner{
-    height:26vh;
-  }
+  .banner{ height:26vh; }
 }
 
 /* ================= MENU ================= */
@@ -89,9 +85,8 @@ body{
   border-radius:14px;
   padding:18px 10px;
   text-align:center;
-  text-decoration:none;
   color:#fff;
-  border:1.5px solid rgba(255,255,255,.08);
+  text-decoration:none;
   transition:.3s;
 }
 
@@ -106,48 +101,83 @@ body{
   font-weight:600;
 }
 
-@media(min-width:769px){
-  .app-btn:hover{
-    transform:translateY(-2px);
-  }
-}
-
 .destaque{
   background:linear-gradient(135deg,#e30613,#b0040f);
 }
 
-/* ================= LOCAÇÃO EMBUTIDA ================= */
-.box-locacao{
+/* ================= BOX PADRÃO ================= */
+.box{
   display:none;
   margin:0 15px 25px;
   border-radius:14px;
   overflow:hidden;
   border:1.5px solid rgba(120,180,255,.4);
   box-shadow:0 10px 25px rgba(0,0,0,.1);
-  animation:slideDown .35s ease;
 }
 
-.box-locacao iframe{
+.box iframe{
   width:100%;
   height:85vh;
   border:none;
 }
 
 @media(max-width:768px){
-  .box-locacao iframe{
-    height:90vh;
-  }
+  .box iframe{ height:90vh; }
 }
 
+/* ================= RODAPÉ ================= */
+footer{
+  background:#1f2a44;
+  color:#fff;
+  padding:22px 18px;
+  margin-top:20px;
+}
+
+.footer-info{
+  max-width:600px;
+  margin:auto;
+  text-align:center;
+}
+
+.footer-info p{
+  font-size:14px;
+  margin-bottom:8px;
+  line-height:1.4;
+}
+
+.footer-btns{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.footer-btns a{
+  background:#e30613;
+  color:#fff;
+  text-decoration:none;
+  padding:10px 16px;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* ================= ANIMAÇÕES ================= */
+.box-seguros{ animation:slideDown .35s ease; }
+.box-locacao{ animation:slideUp .35s ease; }
+
 @keyframes slideDown{
-  from{
-    opacity:0;
-    transform:translateY(-8px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
+  from{opacity:0;transform:translateY(-14px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(14px);}
+  to{opacity:1;transform:translateY(0);}
 }
 </style>
 </head>
@@ -169,66 +199,90 @@ body{
 
 <!-- MENU -->
 <section class="menu">
-  <a href="seguros.html" class="app-btn">
+
+  <a href="#" class="app-btn" id="btn-seguros">
     <i class="fas fa-shield-halved"></i>
     <span>Seguros</span>
   </a>
 
-  <!-- LOCAÇÃO -->
   <a href="#" class="app-btn" id="btn-locacao">
     <i class="fas fa-key"></i>
     <span>Locação</span>
   </a>
 
-  <a href="#" class="app-btn destaque">
-    <i class="fas fa-car-side"></i>
-    <span>Estoque</span>
-  </a>
-
-  <a href="#" class="app-btn">
+  <!-- FINANCIAMENTO (ACIONAMENTO DIRETO) -->
+  <a href="financiamento.html" class="app-btn">
     <i class="fas fa-file-signature"></i>
     <span>Financiamento</span>
-  </a>
-
-  <a href="#" class="app-btn">
-    <i class="fas fa-exchange-alt"></i>
-    <span>Troca</span>
-  </a>
-
-  <a href="#" class="app-btn">
-    <i class="fas fa-phone"></i>
-    <span>Contato</span>
   </a>
 
   <a href="https://wa.me/5587981221150" class="app-btn destaque">
     <i class="fab fa-whatsapp"></i>
     <span>WhatsApp</span>
   </a>
+
 </section>
 
-<!-- LOCAÇÃO (IFRAME EXTERNO) -->
-<section class="box-locacao" id="box-locacao">
+<!-- SEGUROS -->
+<section class="box box-seguros" id="box-seguros">
+  <iframe src="seguros.html" loading="lazy"></iframe>
+</section>
+
+<!-- LOCAÇÃO -->
+<section class="box box-locacao" id="box-locacao">
   <iframe 
     src="https://anajuliafarias659-cloud.github.io/ffsolucoes/locadora/public/index.html?app_id=f128a47d-a635-4824-bfd9-d709ffc3d288"
-    loading="lazy"
-    referrerpolicy="no-referrer">
+    loading="lazy">
   </iframe>
 </section>
 
+<!-- RODAPÉ -->
+<footer>
+  <div class="footer-info">
+    <p>
+      <strong>Endereço:</strong><br>
+      R. José Licínio da Silva, São Raimundo Nonato - PI, 64770-000
+    </p>
+
+    <p>
+      <strong>Telefone:</strong> (87) 98122-1150
+    </p>
+
+    <div class="footer-btns">
+      <a href="https://maps.app.goo.gl/Y8uWpWMuT1aptMCP8" target="_blank">
+        <i class="fas fa-location-dot"></i>
+        Localização
+      </a>
+
+      <a href="https://wa.me/5587981221150" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+        WhatsApp
+      </a>
+    </div>
+  </div>
+</footer>
+
 <script>
+const btnSeguros = document.getElementById("btn-seguros");
 const btnLocacao = document.getElementById("btn-locacao");
+const boxSeguros = document.getElementById("box-seguros");
 const boxLocacao = document.getElementById("box-locacao");
 
-btnLocacao.addEventListener("click", e => {
+btnSeguros.onclick = e => {
   e.preventDefault();
+  boxLocacao.style.display = "none";
+  const aberto = boxSeguros.style.display === "block";
+  boxSeguros.style.display = aberto ? "none" : "block";
+  if(!aberto) boxSeguros.scrollIntoView({behavior:"smooth", block:"start"});
+};
 
+btnLocacao.onclick = e => {
+  e.preventDefault();
+  boxSeguros.style.display = "none";
   const aberto = boxLocacao.style.display === "block";
   boxLocacao.style.display = aberto ? "none" : "block";
-
-  if(!aberto){
-    boxLocacao.scrollIntoView({ behavior:"smooth" });
-  }
-});
+  if(!aberto) boxLocacao.scrollIntoView({behavior:"smooth", block:"start"});
+};
 </script>
 
 </body>
