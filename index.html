@@ -1,11 +1,11 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Gil Veículos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- ===== PWA (ADICIONADO, NÃO REMOVE NADA) ===== -->
+<!-- ===== PWA ===== -->
 <link rel="manifest" href="/Gil-Ve-culos/manifest.json">
 <meta name="theme-color" content="#1f2a44">
 <meta name="background-color" content="#1f2a44">
@@ -19,7 +19,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-/* ===== SEU CSS (INALTERADO) ===== */
 *{
   margin:0;
   padding:0;
@@ -112,7 +111,7 @@ body{
   background:linear-gradient(135deg,#e30613,#b0040f);
 }
 
-/* ===== BOX ===== */
+/* ===== BOX (somente seguros) ===== */
 .box{
   display:none;
   margin:0 15px 25px;
@@ -175,8 +174,6 @@ footer{
 
 <body>
 
-<!-- ===== SEU HTML (100% IGUAL) ===== -->
-
 <header class="topo">
   <div class="logo">
     <span class="gil">Gil</span>
@@ -195,7 +192,12 @@ footer{
     <span>Seguros</span>
   </a>
 
-  <a href="#" class="app-btn" id="btn-locacao">
+  <!-- LOCACAO AGORA ABRE NORMAL -->
+  <a
+    href="https://anajuliafarias659-cloud.github.io/ffsolucoes/locadora/public/index.html?app_id=f128a47d-a635-4824-bfd9-d709ffc3d288"
+    class="app-btn"
+    target="_blank"
+  >
     <i class="fas fa-key"></i>
     <span>Locação</span>
   </a>
@@ -213,13 +215,6 @@ footer{
 
 <section class="box" id="box-seguros">
   <iframe src="seguros.html" loading="lazy"></iframe>
-</section>
-
-<section class="box" id="box-locacao">
-  <iframe
-    src="https://anajuliafarias659-cloud.github.io/ffsolucoes/locadora/public/index.html?app_id=f128a47d-a635-4824-bfd9-d709ffc3d288"
-    loading="lazy">
-  </iframe>
 </section>
 
 <div id="modalWhats">
@@ -254,24 +249,13 @@ footer{
 </footer>
 
 <script>
-/* ===== SEU JS (INALTERADO) ===== */
 const btnSeguros = document.getElementById("btn-seguros");
-const btnLocacao = document.getElementById("btn-locacao");
 const boxSeguros = document.getElementById("box-seguros");
-const boxLocacao = document.getElementById("box-locacao");
 
 btnSeguros.onclick = e => {
   e.preventDefault();
-  boxLocacao.style.display = "none";
   const aberto = boxSeguros.style.display === "block";
   boxSeguros.style.display = aberto ? "none" : "block";
-};
-
-btnLocacao.onclick = e => {
-  e.preventDefault();
-  boxSeguros.style.display = "none";
-  const aberto = boxLocacao.style.display === "block";
-  boxLocacao.style.display = aberto ? "none" : "block";
 };
 
 function abrirWhats(){ modalWhats.style.display="block"; }
@@ -282,7 +266,7 @@ function enviarWhats(){
   window.open("https://wa.me/5587981221150?text="+encodeURIComponent(msg));
 }
 
-/* ===== PWA SERVICE WORKER (ADICIONADO) ===== */
+/* ===== PWA SERVICE WORKER ===== */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/Gil-Ve-culos/sw.js");
