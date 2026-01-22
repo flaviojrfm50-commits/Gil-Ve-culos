@@ -8,30 +8,64 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
-body{background:#f4f4f4;color:#000}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',Arial,sans-serif;
+}
+
+body{
+  background:#f4f4f4;
+  color:#000;
+}
 
 /* ===== TOPO ===== */
 .topo{
   background:#fff;
   padding:14px 18px;
   display:flex;
-  justify-content:space-between;
   align-items:center;
+  justify-content:space-between;
   border-bottom:3px solid #e30613;
 }
-.logo{display:flex;gap:6px}
-.logo .gil{color:#e30613;font-size:26px;font-weight:700;font-style:italic}
-.logo .veiculos{font-size:26px;font-weight:700}
-.topo i{font-size:26px;color:#1f2a44}
+
+.logo{
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+
+.logo .gil{
+  color:#e30613;
+  font-size:26px;
+  font-weight:700;
+  font-style:italic;
+}
+
+.logo .veiculos{
+  font-size:26px;
+  font-weight:700;
+}
+
+.topo i{
+  font-size:26px;
+  color:#1f2a44;
+}
 
 /* ===== BANNER ===== */
-.banner-wrapper{padding:15px}
+.banner-wrapper{ padding:15px; }
+
 .banner{
+  width:100%;
   height:42vh;
   border-radius:14px;
   background:url("imagens/01.jpg") center/contain no-repeat;
   background-color:#0d1b3d;
+}
+
+@media(max-width:768px){
+  .banner{ height:26vh; }
 }
 
 /* ===== MENU ===== */
@@ -41,6 +75,7 @@ body{background:#f4f4f4;color:#000}
   gap:14px;
   padding:15px;
 }
+
 .app-btn{
   background:#1f2a44;
   border-radius:14px;
@@ -49,9 +84,36 @@ body{background:#f4f4f4;color:#000}
   color:#fff;
   text-decoration:none;
 }
-.app-btn i{font-size:28px;display:block;margin-bottom:8px}
-.app-btn span{font-size:15px;font-weight:600}
-.destaque{background:linear-gradient(135deg,#e30613,#b0040f)}
+
+.app-btn i{
+  font-size:28px;
+  display:block;
+  margin-bottom:8px;
+}
+
+.app-btn span{
+  font-size:15px;
+  font-weight:600;
+}
+
+.destaque{
+  background:linear-gradient(135deg,#e30613,#b0040f);
+}
+
+/* ===== BOX (SEGUROS / LOCAÇÃO) ===== */
+.box{
+  display:none;
+  margin:0 15px 25px;
+  border-radius:14px;
+  overflow:hidden;
+  border:1.5px solid rgba(120,180,255,.4);
+}
+
+.box iframe{
+  width:100%;
+  height:85vh;
+  border:none;
+}
 
 /* ===== MODAL WHATS ===== */
 #modalWhats{
@@ -61,6 +123,7 @@ body{background:#f4f4f4;color:#000}
   background:rgba(0,0,0,.7);
   z-index:999;
 }
+
 .modal-box{
   position:relative;
   background:#fff;
@@ -69,8 +132,13 @@ body{background:#f4f4f4;color:#000}
   padding:20px;
   border-radius:18px;
 }
-.modal-box h2{margin-bottom:14px;color:#1f2a44}
-.modal-box button.fechar{
+
+.modal-box h2{
+  margin-bottom:14px;
+  color:#1f2a44;
+}
+
+.modal-box .fechar{
   position:absolute;
   top:12px;
   right:14px;
@@ -79,7 +147,14 @@ body{background:#f4f4f4;color:#000}
   font-size:22px;
   cursor:pointer;
 }
-label{font-size:13px;font-weight:600;margin-top:10px;display:block}
+
+label{
+  font-size:13px;
+  font-weight:600;
+  margin-top:10px;
+  display:block;
+}
+
 input,select{
   width:100%;
   padding:12px;
@@ -87,6 +162,7 @@ input,select{
   border:1px solid #d1d5db;
   margin-top:6px;
 }
+
 .btn-send{
   margin-top:16px;
   width:100%;
@@ -96,7 +172,6 @@ input,select{
   background:#25D366;
   color:#fff;
   font-weight:700;
-  font-size:15px;
   cursor:pointer;
 }
 
@@ -105,34 +180,42 @@ footer{
   background:#1f2a44;
   color:#fff;
   padding:24px 18px;
-  margin-top:20px;
 }
+
 .footer-info{
-  max-width:600px;
-  margin:auto;
   text-align:center;
 }
-.footer-info p{
-  font-size:14px;
-  margin-bottom:10px;
-  line-height:1.4;
-}
+
 .footer-loc{
-  margin-top:8px;
+  margin-top:10px;
   display:flex;
   justify-content:center;
 }
+
 .footer-loc a{
   background:#e30613;
   color:#fff;
   text-decoration:none;
   padding:10px 18px;
   border-radius:14px;
-  font-size:14px;
   font-weight:600;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
+}
+
+/* ===== FIX LOGO MOBILE ===== */
+@media (max-width:480px){
+  .logo .gil,
+  .logo .veiculos{
+    font-size:22px;
+    line-height:1;
+  }
+
+  .topo{
+    padding:12px 14px;
+  }
+
+  .topo i{
+    font-size:22px;
+  }
 }
 </style>
 </head>
@@ -152,21 +235,38 @@ footer{
 </section>
 
 <section class="menu">
-  <a href="#" class="app-btn">
-    <i class="fas fa-shield-halved"></i><span>Seguros</span>
+  <a href="#" class="app-btn" id="btn-seguros">
+    <i class="fas fa-shield-halved"></i>
+    <span>Seguros</span>
   </a>
 
-  <a href="#" class="app-btn">
-    <i class="fas fa-key"></i><span>Locação</span>
+  <a href="#" class="app-btn" id="btn-locacao">
+    <i class="fas fa-key"></i>
+    <span>Locação</span>
   </a>
 
   <a href="financiamento.html" class="app-btn">
-    <i class="fas fa-file-signature"></i><span>Financiamento</span>
+    <i class="fas fa-file-signature"></i>
+    <span>Financiamento</span>
   </a>
 
   <a href="#" class="app-btn destaque" onclick="abrirWhats()">
-    <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
+    <i class="fab fa-whatsapp"></i>
+    <span>WhatsApp</span>
   </a>
+</section>
+
+<!-- SEGUROS -->
+<section class="box" id="box-seguros">
+  <iframe src="seguros.html" loading="lazy"></iframe>
+</section>
+
+<!-- LOCAÇÃO -->
+<section class="box" id="box-locacao">
+  <iframe
+    src="https://anajuliafarias659-cloud.github.io/ffsolucoes/locadora/public/index.html?app_id=f128a47d-a635-4824-bfd9-d709ffc3d288"
+    loading="lazy">
+  </iframe>
 </section>
 
 <!-- MODAL WHATS -->
@@ -189,27 +289,17 @@ footer{
       <option>Aluguel de Veículos</option>
     </select>
 
-    <button class="btn-send" onclick="enviarWhats()">
-      <i class="fab fa-whatsapp"></i> Enviar
-    </button>
+    <button class="btn-send" onclick="enviarWhats()">Enviar</button>
   </div>
 </div>
 
-<!-- RODAPÉ -->
 <footer>
   <div class="footer-info">
-    <p>
-      <strong>Endereço:</strong><br>
-      R. José Licínio da Silva, São Raimundo Nonato - PI, 64770-000
-    </p>
-
-    <p>
-      <strong>Telefone:</strong> (87) 98122-1150
-    </p>
+    <p><strong>Endereço:</strong><br>R. José Licínio da Silva, São Raimundo Nonato - PI</p>
+    <p><strong>Telefone:</strong> (87) 98122-1150</p>
 
     <div class="footer-loc">
       <a href="https://maps.app.goo.gl/Y8uWpWMuT1aptMCP8" target="_blank">
-        <i class="fas fa-location-dot"></i>
         Ver Localização
       </a>
     </div>
@@ -217,36 +307,62 @@ footer{
 </footer>
 
 <script>
-function abrirWhats(){
-  modalWhats.style.display="block";
-}
-function fecharWhats(){
-  modalWhats.style.display="none";
-}
+const btnSeguros = document.getElementById("btn-seguros");
+const btnLocacao = document.getElementById("btn-locacao");
+const boxSeguros = document.getElementById("box-seguros");
+const boxLocacao = document.getElementById("box-locacao");
+
+btnSeguros.onclick = e => {
+  e.preventDefault();
+  boxLocacao.style.display = "none";
+
+  const aberto = boxSeguros.style.display === "block";
+  boxSeguros.style.display = aberto ? "none" : "block";
+
+  if(!aberto){
+    boxSeguros.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+};
+
+btnLocacao.onclick = e => {
+  e.preventDefault();
+  boxSeguros.style.display = "none";
+
+  const aberto = boxLocacao.style.display === "block";
+  boxLocacao.style.display = aberto ? "none" : "block";
+
+  if(!aberto){
+    boxLocacao.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+};
+
+function abrirWhats(){ modalWhats.style.display="block"; }
+function fecharWhats(){ modalWhats.style.display="none"; }
+
 modalWhats.addEventListener("click", e=>{
   if(e.target === modalWhats) fecharWhats();
 });
+
 document.addEventListener("keydown", e=>{
   if(e.key === "Escape") fecharWhats();
 });
-function enviarWhats(){
-  if(!wNome.value.trim()){ alert("Informe seu nome"); return; }
-  if(!wEndereco.value.trim()){ alert("Informe seu endereço"); return; }
-  if(!wAssunto.value){ alert("Selecione um assunto"); return; }
 
-  const msg = `📲 *Contato via Site*
-👤 Nome: ${wNome.value}
-📍 Endereço: ${wEndereco.value}
-📌 Assunto: ${wAssunto.value}`;
+function enviarWhats(){
+  if(!wNome.value || !wEndereco.value || !wAssunto.value){
+    alert("Preencha todos os campos");
+    return;
+  }
+
+  const msg = `Contato via site
+Nome: ${wNome.value}
+Endereço: ${wEndereco.value}
+Assunto: ${wAssunto.value}`;
 
   window.open(
     "https://wa.me/5587981221150?text="+encodeURIComponent(msg),
     "_blank"
   );
 
-  wNome.value="";
-  wEndereco.value="";
-  wAssunto.selectedIndex=0;
   fecharWhats();
 }
 </script>
