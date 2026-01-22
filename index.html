@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -64,15 +64,30 @@ body{
   color:#1f2a44;
 }
 
-/* ===== BANNER ===== */
+/* ===== BANNER SLIDER ===== */
 .banner-wrapper{ padding:15px; }
 
 .banner{
+  position:relative;
   width:100%;
   height:42vh;
   border-radius:14px;
-  background:url("imagens/01.jpg") center/contain no-repeat;
-  background-color:#0d1b3d;
+  overflow:hidden;
+  background:#0d1b3d;
+}
+
+.slide{
+  position:absolute;
+  inset:0;
+  background-position:center;
+  background-size:contain;
+  background-repeat:no-repeat;
+  opacity:0;
+  transition:opacity 1s ease-in-out;
+}
+
+.slide.active{
+  opacity:1;
 }
 
 @media(max-width:768px){
@@ -168,18 +183,21 @@ footer{
 </header>
 
 <section class="banner-wrapper">
-  <section class="banner"></section>
+  <section class="banner">
+    <div class="slide active"></div>
+    <div class="slide"></div>
+    <div class="slide"></div>
+    <div class="slide"></div>
+  </section>
 </section>
 
 <section class="menu">
 
-  <!-- SEGUROS NORMAL -->
   <a href="seguros.html" class="app-btn">
     <i class="fas fa-shield-halved"></i>
     <span>Seguros</span>
   </a>
 
-  <!-- LOCAÇÃO NORMAL -->
   <a 
     href="https://anajuliafarias659-cloud.github.io/ffsolucoes/locadora/public/index.html?app_id=f128a47d-a635-4824-bfd9-d709ffc3d288"
     class="app-btn"
@@ -240,6 +258,28 @@ function enviarWhats(){
   const msg = `Contato via site`;
   window.open("https://wa.me/5587981221150?text="+encodeURIComponent(msg));
 }
+
+/* ===== SLIDE AUTOMÁTICO ===== */
+const imagensBanner = [
+  "imagens/01.jpg",
+  "imagens/02.jpg",
+  "imagens/03.jpg",
+  "imagens/04.jpg"
+];
+
+const slides = document.querySelectorAll(".slide");
+
+slides.forEach((slide, i) => {
+  slide.style.backgroundImage = `url('${imagensBanner[i]}')`;
+});
+
+let slideAtual = 0;
+
+setInterval(() => {
+  slides[slideAtual].classList.remove("active");
+  slideAtual = (slideAtual + 1) % slides.length;
+  slides[slideAtual].classList.add("active");
+}, 4000);
 
 /* ===== PWA SERVICE WORKER ===== */
 if ("serviceWorker" in navigator) {
