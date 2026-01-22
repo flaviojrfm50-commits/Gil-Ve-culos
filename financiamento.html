@@ -5,7 +5,6 @@
 <title>Financiamento – Gil Veículos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -21,19 +20,20 @@ body{
   color:#000;
 }
 
-/* ===== TOPO ===== */
+/* TOPO */
 .topo{
   background:#fff;
   padding:14px 18px;
   display:flex;
-  align-items:center;
   justify-content:space-between;
+  align-items:center;
   border-bottom:3px solid #e30613;
 }
 
 .logo{
   display:flex;
   gap:6px;
+  align-items:center;
 }
 
 .logo .gil{
@@ -53,16 +53,16 @@ body{
   color:#1f2a44;
 }
 
-/* ===== HEADER ===== */
+/* HEADER */
 .header{
-  padding:28px 18px;
+  padding:26px 18px;
   background:#1f2a44;
   color:#fff;
 }
 
 .header h1{
   font-size:22px;
-  margin-bottom:8px;
+  margin-bottom:6px;
 }
 
 .header p{
@@ -70,7 +70,7 @@ body{
   opacity:.9;
 }
 
-/* ===== FORM ===== */
+/* FORM */
 .formulario{
   margin:22px 15px;
   background:#fff;
@@ -141,7 +141,7 @@ body{
 
 <section class="header">
   <h1>Solicitação de Financiamento</h1>
-  <p>Preencha os dados abaixo para analisarmos as melhores condições para você.</p>
+  <p>Preencha os dados abaixo para análise.</p>
 </section>
 
 <section class="formulario">
@@ -149,22 +149,42 @@ body{
 
   <div class="campo">
     <label>Nome completo</label>
-    <input type="text" id="nome">
+    <input id="nome">
   </div>
 
   <div class="campo">
     <label>Telefone / WhatsApp</label>
-    <input type="text" id="telefone">
+    <input id="telefone">
   </div>
 
   <div class="campo">
     <label>CPF</label>
-    <input type="text" id="cpf">
+    <input id="cpf" maxlength="14">
+  </div>
+
+  <div class="campo">
+    <label>RG</label>
+    <input id="rg" maxlength="12">
+  </div>
+
+  <div class="campo">
+    <label>E-mail</label>
+    <input id="email">
+  </div>
+
+  <div class="campo">
+    <label>CEP</label>
+    <input id="cep" maxlength="9">
+  </div>
+
+  <div class="campo">
+    <label>Endereço completo</label>
+    <input id="endereco">
   </div>
 
   <div class="campo">
     <label>Renda mensal aproximada</label>
-    <input type="text" id="renda">
+    <input id="renda">
   </div>
 
   <h2>Dados do Veículo</h2>
@@ -179,17 +199,17 @@ body{
 
   <div class="campo">
     <label>Modelo do veículo</label>
-    <input type="text" id="modelo">
+    <input id="modelo">
   </div>
 
   <div class="campo">
     <label>Valor aproximado</label>
-    <input type="text" id="valor">
+    <input id="valor">
   </div>
 
   <div class="campo">
     <label>Entrada disponível</label>
-    <input type="text" id="entrada">
+    <input id="entrada">
   </div>
 
   <div class="campo">
@@ -204,21 +224,65 @@ body{
 </section>
 
 <script>
+// ===== MÁSCARAS =====
+cpf.addEventListener("input", () => {
+  cpf.value = cpf.value
+    .replace(/\D/g, "")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+});
+
+rg.addEventListener("input", () => {
+  rg.value = rg.value
+    .replace(/\D/g, "")
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1})$/, "$1-$2");
+});
+
+cep.addEventListener("input", () => {
+  cep.value = cep.value
+    .replace(/\D/g, "")
+    .replace(/(\d{5})(\d)/, "$1-$2");
+});
+
+// ===== BUSCA CEP (VIACEP) =====
+cep.addEventListener("blur", () => {
+  const cepLimpo = cep.value.replace(/\D/g, "");
+  if (cepLimpo.length !== 8) return;
+
+  fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
+    .then(r => r.json())
+    .then(d => {
+      if (!d.erro) {
+        endereco.value = `${d.logradouro}, ${d.bairro}, ${d.localidade} - ${d.uf}`;
+      }
+    });
+});
+
+// ===== ENVIO WHATS =====
 function enviarWhats(){
+  const v = id => document.getElementById(id).value;
+
   const msg = `📄 *Solicitação de Financiamento*
 
-👤 Nome: ${nome.value}
-📞 Telefone: ${telefone.value}
-🪪 CPF: ${cpf.value}
-💰 Renda: ${renda.value}
+👤 Nome: ${v("nome")}
+📞 Telefone: ${v("telefone")}
+🪪 CPF: ${v("cpf")}
+🆔 RG: ${v("rg")}
+📧 E-mail: ${v("email")}
+📍 CEP: ${v("cep")}
+🏠 Endereço: ${v("endereco")}
+💰 Renda: ${v("renda")}
 
-🚗 Veículo: ${tipo.value}
-📌 Modelo: ${modelo.value}
-💵 Valor: ${valor.value}
-💳 Entrada: ${entrada.value}
+🚗 Veículo: ${v("tipo")}
+📌 Modelo: ${v("modelo")}
+💵 Valor: ${v("valor")}
+💳 Entrada: ${v("entrada")}
 
 📝 Observações:
-${obs.value}`;
+${v("obs")}`;
 
   window.open(
     "https://wa.me/5587981221150?text="+encodeURIComponent(msg),
