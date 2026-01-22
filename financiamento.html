@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Financiamento – Gil Veículos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',Arial,sans-serif;
+}
+
+body{
+  background:#f4f4f4;
+  color:#000;
+}
+
+/* ===== TOPO ===== */
+.topo{
+  background:#fff;
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:3px solid #e30613;
+}
+
+.logo{
+  display:flex;
+  gap:6px;
+}
+
+.logo .gil{
+  color:#e30613;
+  font-size:26px;
+  font-weight:700;
+  font-style:italic;
+}
+
+.logo .veiculos{
+  font-size:26px;
+  font-weight:700;
+}
+
+.topo i{
+  font-size:26px;
+  color:#1f2a44;
+}
+
+/* ===== HEADER ===== */
+.header{
+  padding:28px 18px;
+  background:#1f2a44;
+  color:#fff;
+}
+
+.header h1{
+  font-size:22px;
+  margin-bottom:8px;
+}
+
+.header p{
+  font-size:14px;
+  opacity:.9;
+}
+
+/* ===== FORM ===== */
+.formulario{
+  margin:22px 15px;
+  background:#fff;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.12);
+}
+
+.formulario h2{
+  font-size:18px;
+  margin-bottom:14px;
+  color:#1f2a44;
+}
+
+.campo{
+  margin-bottom:14px;
+}
+
+.campo label{
+  display:block;
+  font-size:13px;
+  margin-bottom:6px;
+  font-weight:600;
+}
+
+.campo input,
+.campo select,
+.campo textarea{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  font-size:14px;
+}
+
+.campo textarea{
+  resize:none;
+  min-height:90px;
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#e30613,#b0040f);
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+</style>
+</head>
+
+<body>
+
+<header class="topo">
+  <div class="logo">
+    <span class="gil">Gil</span>
+    <span class="veiculos">Veículos</span>
+  </div>
+  <i class="fas fa-car"></i>
+</header>
+
+<section class="header">
+  <h1>Solicitação de Financiamento</h1>
+  <p>Preencha os dados abaixo para analisarmos as melhores condições para você.</p>
+</section>
+
+<section class="formulario">
+  <h2>Dados do Cliente</h2>
+
+  <div class="campo">
+    <label>Nome completo</label>
+    <input type="text" id="nome">
+  </div>
+
+  <div class="campo">
+    <label>Telefone / WhatsApp</label>
+    <input type="text" id="telefone">
+  </div>
+
+  <div class="campo">
+    <label>CPF</label>
+    <input type="text" id="cpf">
+  </div>
+
+  <div class="campo">
+    <label>Renda mensal aproximada</label>
+    <input type="text" id="renda">
+  </div>
+
+  <h2>Dados do Veículo</h2>
+
+  <div class="campo">
+    <label>Tipo de veículo</label>
+    <select id="tipo">
+      <option>Carro</option>
+      <option>Moto</option>
+    </select>
+  </div>
+
+  <div class="campo">
+    <label>Modelo do veículo</label>
+    <input type="text" id="modelo">
+  </div>
+
+  <div class="campo">
+    <label>Valor aproximado</label>
+    <input type="text" id="valor">
+  </div>
+
+  <div class="campo">
+    <label>Entrada disponível</label>
+    <input type="text" id="entrada">
+  </div>
+
+  <div class="campo">
+    <label>Observações</label>
+    <textarea id="obs"></textarea>
+  </div>
+
+  <button class="btn" onclick="enviarWhats()">
+    <i class="fab fa-whatsapp"></i>
+    Enviar Solicitação
+  </button>
+</section>
+
+<script>
+function enviarWhats(){
+  const msg = `📄 *Solicitação de Financiamento*
+
+👤 Nome: ${nome.value}
+📞 Telefone: ${telefone.value}
+🪪 CPF: ${cpf.value}
+💰 Renda: ${renda.value}
+
+🚗 Veículo: ${tipo.value}
+📌 Modelo: ${modelo.value}
+💵 Valor: ${valor.value}
+💳 Entrada: ${entrada.value}
+
+📝 Observações:
+${obs.value}`;
+
+  window.open(
+    "https://wa.me/5587981221150?text="+encodeURIComponent(msg),
+    "_blank"
+  );
+}
+</script>
+
+</body>
+</html>
