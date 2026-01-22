@@ -1,72 +1,32 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Gil Veículos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- ===== PWA ===== -->
-<link rel="manifest" href="/Gil-Ve-culos/manifest.json">
-<meta name="theme-color" content="#1f2a44">
-<meta name="background-color" content="#1f2a44">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gil Veículos">
-<link rel="apple-touch-icon" href="/Gil-Ve-culos/icons/icon-192.png">
-<!-- ===== FIM PWA ===== -->
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Segoe UI',Arial,sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
+body{background:#f4f4f4;color:#000}
 
-body{
-  background:#f4f4f4;
-  color:#000;
-}
-
-/* ===== TOPO ===== */
+/* TOPO */
 .topo{
   background:#fff;
   padding:14px 18px;
   display:flex;
-  align-items:center;
   justify-content:space-between;
+  align-items:center;
   border-bottom:3px solid #e30613;
 }
+.logo{display:flex;gap:6px;align-items:center}
+.logo .gil{color:#e30613;font-size:26px;font-weight:700;font-style:italic}
+.logo .veiculos{font-size:26px;font-weight:700}
+.topo i{font-size:26px;color:#1f2a44}
 
-.logo{
-  display:flex;
-  gap:6px;
-  align-items:center;
-}
-
-.logo .gil{
-  color:#e30613;
-  font-size:26px;
-  font-weight:700;
-  font-style:italic;
-}
-
-.logo .veiculos{
-  font-size:26px;
-  font-weight:700;
-}
-
-.topo i{
-  font-size:26px;
-  color:#1f2a44;
-}
-
-/* ===== BANNER SLIDER ===== */
-.banner-wrapper{ padding:15px; }
-
+/* BANNER */
+.banner-wrapper{padding:15px}
 .banner{
   position:relative;
   width:100%;
@@ -75,7 +35,6 @@ body{
   overflow:hidden;
   background:#0d1b3d;
 }
-
 .slide{
   position:absolute;
   inset:0;
@@ -83,25 +42,18 @@ body{
   background-size:contain;
   background-repeat:no-repeat;
   opacity:0;
-  transition:opacity 1s ease-in-out;
+  transition:opacity 1s;
 }
+.slide.active{opacity:1}
+@media(max-width:768px){.banner{height:26vh}}
 
-.slide.active{
-  opacity:1;
-}
-
-@media(max-width:768px){
-  .banner{ height:26vh; }
-}
-
-/* ===== MENU ===== */
+/* MENU */
 .menu{
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:14px;
   padding:15px;
 }
-
 .app-btn{
   background:#1f2a44;
   border-radius:14px;
@@ -110,63 +62,24 @@ body{
   color:#fff;
   text-decoration:none;
 }
+.app-btn i{font-size:28px;display:block;margin-bottom:8px}
+.app-btn span{font-size:15px;font-weight:600}
+.destaque{background:linear-gradient(135deg,#e30613,#b0040f)}
 
-.app-btn i{
-  font-size:28px;
-  display:block;
-  margin-bottom:8px;
-}
-
-.app-btn span{
-  font-size:15px;
-  font-weight:600;
-}
-
-.destaque{
-  background:linear-gradient(135deg,#e30613,#b0040f);
-}
-
-/* ===== MODAL WHATS ===== */
-#modalWhats{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.7);
-  z-index:999;
-}
-
-.modal-box{
-  position:relative;
-  background:#fff;
-  max-width:420px;
-  margin:10% auto;
-  padding:20px;
-  border-radius:18px;
-}
-
-/* ===== RODAPÉ ===== */
+/* RODAPÉ */
 footer{
   background:#1f2a44;
   color:#fff;
   padding:24px 18px;
-}
-
-.footer-info{
   text-align:center;
 }
-
-.footer-loc{
-  margin-top:10px;
-  display:flex;
-  justify-content:center;
-}
-
+.footer-loc{margin-top:10px}
 .footer-loc a{
   background:#e30613;
   color:#fff;
-  text-decoration:none;
   padding:10px 18px;
   border-radius:14px;
+  text-decoration:none;
   font-weight:600;
 }
 </style>
@@ -198,11 +111,8 @@ footer{
     <span>Seguros</span>
   </a>
 
-  <a 
-    href="https://anajuliafarias659-cloud.github.io/ffsolucoes/locadora/public/index.html?app_id=f128a47d-a635-4824-bfd9-d709ffc3d288"
-    class="app-btn"
-    target="_blank"
-  >
+  <a href="https://anajuliafarias659-cloud.github.io/ffsolucoes/locadora/public/index.html?app_id=f128a47d-a635-4824-bfd9-d709ffc3d288"
+     class="app-btn" target="_blank">
     <i class="fas fa-key"></i>
     <span>Locação</span>
   </a>
@@ -212,83 +122,45 @@ footer{
     <span>Financiamento</span>
   </a>
 
-  <a href="#" class="app-btn destaque" onclick="abrirWhats()">
+  <a href="refinanciamento.html" class="app-btn">
+    <i class="fas fa-hand-holding-dollar"></i>
+    <span>Refinanciamento</span>
+  </a>
+
+  <a href="consorcio.html" class="app-btn">
+    <i class="fas fa-users"></i>
+    <span>Consórcio</span>
+  </a>
+
+  <a href="https://wa.me/5587981221150" class="app-btn destaque" target="_blank">
     <i class="fab fa-whatsapp"></i>
     <span>WhatsApp</span>
   </a>
 
 </section>
 
-<div id="modalWhats">
-  <div class="modal-box">
-    <button class="fechar" onclick="fecharWhats()">×</button>
-    <h2>Contato WhatsApp</h2>
-    <label>Nome</label>
-    <input id="wNome">
-    <label>Endereço</label>
-    <input id="wEndereco">
-    <label>Assunto</label>
-    <select id="wAssunto">
-      <option value="">Selecione</option>
-      <option>Financiamento</option>
-      <option>Seguros</option>
-      <option>Aluguel de Veículos</option>
-    </select>
-    <button class="btn-send" onclick="enviarWhats()">Enviar</button>
-  </div>
-</div>
-
 <footer>
-  <div class="footer-info">
-    <p><strong>Endereço:</strong><br>R. José Licínio da Silva, São Raimundo Nonato - PI</p>
-    <p><strong>Telefone:</strong> (87) 98122-1150</p>
-    <div class="footer-loc">
-      <a href="https://maps.app.goo.gl/Y8uWpWMuT1aptMCP8" target="_blank">
-        Ver Localização
-      </a>
-    </div>
+  <p><strong>Endereço:</strong><br>R. José Licínio da Silva, São Raimundo Nonato - PI</p>
+  <p><strong>Telefone:</strong> (87) 98122-1150</p>
+  <div class="footer-loc">
+    <a href="https://maps.app.goo.gl/Y8uWpWMuT1aptMCP8" target="_blank">
+      Ver Localização
+    </a>
   </div>
 </footer>
 
 <script>
-function abrirWhats(){ modalWhats.style.display="block"; }
-function fecharWhats(){ modalWhats.style.display="none"; }
-
-function enviarWhats(){
-  const msg = `Contato via site`;
-  window.open("https://wa.me/5587981221150?text="+encodeURIComponent(msg));
-}
-
-/* ===== SLIDE AUTOMÁTICO ===== */
-const imagensBanner = [
-  "imagens/01.jpg",
-  "imagens/02.jpg",
-  "imagens/03.jpg",
-  "imagens/04.jpg"
-];
-
-const slides = document.querySelectorAll(".slide");
-
-slides.forEach((slide, i) => {
-  slide.style.backgroundImage = `url('${imagensBanner[i]}')`;
-});
-
-let slideAtual = 0;
-
-setInterval(() => {
-  slides[slideAtual].classList.remove("active");
-  slideAtual = (slideAtual + 1) % slides.length;
-  slides[slideAtual].classList.add("active");
-}, 6000);
-
-/* ===== PWA SERVICE WORKER ===== */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/Gil-Ve-culos/sw.js");
-  });
-}
+/* SLIDE */
+const imgs=["imagens/01.jpg","imagens/02.jpg","imagens/03.jpg","imagens/04.jpg"];
+const slides=document.querySelectorAll(".slide");
+slides.forEach((s,idx)=>s.style.backgroundImage=`url('${imgs[idx]}')`);
+let slideIndex=0;
+setInterval(()=>{
+  slides[slideIndex].classList.remove("active");
+  slideIndex=(slideIndex+1)%slides.length;
+  slides[slideIndex].classList.add("active");
+},6000);
 </script>
 
 </body>
 </html>
-
