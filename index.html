@@ -61,10 +61,55 @@ body{background:#f4f4f4;color:#000}
   text-align:center;
   color:#fff;
   text-decoration:none;
+  cursor:pointer;
 }
 .app-btn i{font-size:28px;display:block;margin-bottom:8px}
 .app-btn span{font-size:15px;font-weight:600}
 .destaque{background:linear-gradient(135deg,#e30613,#b0040f)}
+
+/* MODAL */
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  z-index:999;
+}
+.modal-box{
+  background:#fff;
+  max-width:420px;
+  margin:15% auto;
+  padding:20px;
+  border-radius:18px;
+}
+.modal-box h2{margin-bottom:10px}
+.modal-box label{font-size:13px;margin-top:10px;display:block}
+.modal-box input,
+.modal-box select{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+.btn-send{
+  margin-top:16px;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#25d366;
+  color:#fff;
+  font-size:16px;
+  font-weight:700;
+}
+.fechar{
+  float:right;
+  border:none;
+  background:none;
+  font-size:22px;
+  cursor:pointer;
+}
 
 /* RODAPÉ */
 footer{
@@ -132,12 +177,40 @@ footer{
     <span>Consórcio</span>
   </a>
 
-  <a href="https://wa.me/5587981221150" class="app-btn destaque" target="_blank">
+  <!-- WHATS COM FORM -->
+  <div class="app-btn destaque" onclick="abrirWhats()">
     <i class="fab fa-whatsapp"></i>
     <span>WhatsApp</span>
-  </a>
+  </div>
 
 </section>
+
+<!-- MODAL WHATS -->
+<div class="modal" id="modalWhats">
+  <div class="modal-box">
+    <button class="fechar" onclick="fecharWhats()">×</button>
+    <h2>Contato WhatsApp</h2>
+
+    <label>Assunto</label>
+    <select id="assunto">
+      <option>Financiamento</option>
+      <option>Refinanciamento</option>
+      <option>Consórcio</option>
+      <option>Seguros</option>
+      <option>Outro</option>
+    </select>
+
+    <label>Nome completo</label>
+    <input id="nome">
+
+    <label>CPF</label>
+    <input id="cpf">
+
+    <button class="btn-send" onclick="enviarWhats()">
+      Enviar para WhatsApp
+    </button>
+  </div>
+</div>
 
 <footer>
   <p><strong>Endereço:</strong><br>R. José Licínio da Silva, São Raimundo Nonato - PI</p>
@@ -160,6 +233,27 @@ setInterval(()=>{
   slideIndex=(slideIndex+1)%slides.length;
   slides[slideIndex].classList.add("active");
 },6000);
+
+/* MODAL WHATS */
+function abrirWhats(){
+  modalWhats.style.display="block";
+}
+function fecharWhats(){
+  modalWhats.style.display="none";
+}
+
+function enviarWhats(){
+  const msg = `📲 *Contato via WhatsApp*
+
+📌 Assunto: ${assunto.value}
+👤 Nome: ${nome.value}
+🪪 CPF: ${cpf.value}`;
+
+  window.open(
+    "https://wa.me/5587981221150?text="+encodeURIComponent(msg),
+    "_blank"
+  );
+}
 </script>
 
 </body>
