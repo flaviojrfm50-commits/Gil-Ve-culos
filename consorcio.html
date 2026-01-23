@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Consórcio – Gil Veículos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',Arial,sans-serif;
+}
+
+body{
+  background:#f4f4f4;
+  color:#000;
+}
+
+/* TOPO */
+.topo{
+  background:#fff;
+  padding:14px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:3px solid #e30613;
+}
+
+.logo{
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+
+.logo .gil{
+  color:#e30613;
+  font-size:26px;
+  font-weight:700;
+  font-style:italic;
+}
+
+.logo .veiculos{
+  font-size:26px;
+  font-weight:700;
+}
+
+.topo i{
+  font-size:26px;
+  color:#1f2a44;
+}
+
+/* HEADER */
+.header{
+  padding:26px 18px;
+  background:#1f2a44;
+  color:#fff;
+}
+
+.header h1{
+  font-size:22px;
+  margin-bottom:6px;
+}
+
+.header p{
+  font-size:14px;
+  opacity:.9;
+}
+
+/* FORM */
+.formulario{
+  margin:22px 15px;
+  background:#fff;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.12);
+}
+
+.formulario h2{
+  font-size:18px;
+  margin-bottom:14px;
+  color:#1f2a44;
+}
+
+.campo{
+  margin-bottom:14px;
+}
+
+.campo label{
+  display:block;
+  font-size:13px;
+  margin-bottom:6px;
+  font-weight:600;
+}
+
+.campo input,
+.campo select,
+.campo textarea{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  font-size:14px;
+}
+
+.campo textarea{
+  resize:none;
+  min-height:90px;
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#e30613,#b0040f);
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+</style>
+</head>
+
+<body>
+
+<header class="topo">
+  <div class="logo">
+    <span class="gil">Gil</span>
+    <span class="veiculos">Veículos</span>
+  </div>
+  <i class="fas fa-car"></i>
+</header>
+
+<section class="header">
+  <h1>Solicitação de Consórcio</h1>
+  <p>Preencha os dados abaixo para simular o melhor plano de consórcio.</p>
+</section>
+
+<section class="formulario">
+  <h2>Dados do Cliente</h2>
+
+  <div class="campo">
+    <label>Nome completo</label>
+    <input id="nome">
+  </div>
+
+  <div class="campo">
+    <label>Telefone / WhatsApp</label>
+    <input id="telefone">
+  </div>
+
+  <div class="campo">
+    <label>CPF</label>
+    <input id="cpf" maxlength="14">
+  </div>
+
+  <div class="campo">
+    <label>RG</label>
+    <input id="rg" maxlength="12">
+  </div>
+
+  <div class="campo">
+    <label>E-mail</label>
+    <input id="email">
+  </div>
+
+  <div class="campo">
+    <label>CEP</label>
+    <input id="cep" maxlength="9">
+  </div>
+
+  <div class="campo">
+    <label>Endereço completo</label>
+    <input id="endereco">
+  </div>
+
+  <div class="campo">
+    <label>Renda mensal aproximada</label>
+    <input id="renda">
+  </div>
+
+  <h2>Dados do Consórcio</h2>
+
+  <div class="campo">
+    <label>Tipo de consórcio</label>
+    <select id="tipo">
+      <option>Carro</option>
+      <option>Moto</option>
+      <option>Imóvel</option>
+    </select>
+  </div>
+
+  <div class="campo">
+    <label>Valor da carta de crédito desejada</label>
+    <input id="valor">
+  </div>
+
+  <div class="campo">
+    <label>Prazo desejado (meses)</label>
+    <input id="prazo">
+  </div>
+
+  <div class="campo">
+    <label>Possui valor para lance?</label>
+    <select id="lance">
+      <option>Não</option>
+      <option>Sim</option>
+    </select>
+  </div>
+
+  <div class="campo">
+    <label>Observações</label>
+    <textarea id="obs"></textarea>
+  </div>
+
+  <button class="btn" onclick="enviarWhats()">
+    <i class="fab fa-whatsapp"></i>
+    Enviar Solicitação
+  </button>
+</section>
+
+<script>
+// ===== MÁSCARAS =====
+cpf.addEventListener("input", () => {
+  cpf.value = cpf.value
+    .replace(/\D/g,"")
+    .replace(/(\d{3})(\d)/,"$1.$2")
+    .replace(/(\d{3})(\d)/,"$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/,"$1-$2");
+});
+
+rg.addEventListener("input", () => {
+  rg.value = rg.value
+    .replace(/\D/g,"")
+    .replace(/(\d{2})(\d)/,"$1.$2")
+    .replace(/(\d{3})(\d)/,"$1.$2")
+    .replace(/(\d{3})(\d)$/,"$1-$2");
+});
+
+cep.addEventListener("input", () => {
+  cep.value = cep.value
+    .replace(/\D/g,"")
+    .replace(/(\d{5})(\d)/,"$1-$2");
+});
+
+// ===== BUSCA CEP =====
+cep.addEventListener("blur", () => {
+  const c = cep.value.replace(/\D/g,"");
+  if(c.length !== 8) return;
+
+  fetch(`https://viacep.com.br/ws/${c}/json/`)
+    .then(r => r.json())
+    .then(d => {
+      if(!d.erro){
+        endereco.value = `${d.logradouro}, ${d.bairro}, ${d.localidade} - ${d.uf}`;
+      }
+    });
+});
+
+// ===== ENVIO WHATS =====
+function enviarWhats(){
+  const v = id => document.getElementById(id).value;
+
+  const msg = `📄 *Solicitação de Consórcio*
+
+👤 Nome: ${v("nome")}
+📞 Telefone: ${v("telefone")}
+🪪 CPF: ${v("cpf")}
+🆔 RG: ${v("rg")}
+📧 E-mail: ${v("email")}
+📍 CEP: ${v("cep")}
+🏠 Endereço: ${v("endereco")}
+💰 Renda: ${v("renda")}
+
+📦 Tipo: ${v("tipo")}
+💳 Carta de crédito: ${v("valor")}
+⏳ Prazo: ${v("prazo")} meses
+🔥 Possui lance?: ${v("lance")}
+
+📝 Observações:
+${v("obs")}`;
+
+  window.open(
+    "https://wa.me/5587981221150?text="+encodeURIComponent(msg),
+    "_blank"
+  );
+}
+</script>
+
+</body>
+</html>
