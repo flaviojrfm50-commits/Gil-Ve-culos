@@ -115,10 +115,11 @@ th{background:#1f2937;color:#fff;}
 // ❗ DECLARAÇÃO DO SUPABASE (UMA ÚNICA VEZ)
 // ————————————————————————————————
 
-const supabase = window.supabase.createClient(
+const supabaseClient = window.supabase.createClient(
   "https://bzgvbghxmebdjqnlakbj.supabase.co",
   "sb_publishable_IyvZNwtgkvECR0QVlYbhzw_zPL1TMJv"
 );
+
 
 let usuarioAtual;
 let perfilAtual;
