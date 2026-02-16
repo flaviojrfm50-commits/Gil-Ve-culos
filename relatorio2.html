@@ -5,7 +5,6 @@
 <title>ERP Frota Multiusuário</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -109,37 +108,30 @@ th{background:#1f2937;color:#fff;}
 </div>
 </div>
 
-<script>
+<script type="module">
 
-// ————————————————————————————————
-// ❗ DECLARAÇÃO DO SUPABASE (UMA ÚNICA VEZ)
-// ————————————————————————————————
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const supabaseClient = window.supabase.createClient(
+const supabaseClient = createClient(
   "https://bzgvbghxmebdjqnlakbj.supabase.co",
   "sb_publishable_IyvZNwtgkvECR0QVlYbhzw_zPL1TMJv"
 );
 
-
 let usuarioAtual;
 let perfilAtual;
 
-// ————————————————————————————————
-// 🔐 LOGIN
-// ————————————————————————————————
+window.login = async function(){
 
-async function login(){
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email.value,
-    password: senha.value
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: document.getElementById("email").value,
+    password: document.getElementById("senha").value
   });
 
   if(error){ alert(error.message); return; }
 
   usuarioAtual = data.user;
 
-  const { data: perfil } = await supabase
+  const { data: perfil } = await supabaseClient
     .from("profiles")
     .select("*")
     .eq("id", usuarioAtual.id)
@@ -148,221 +140,15 @@ async function login(){
   perfilAtual = perfil;
 
   if(perfil.role === "super_admin" || perfil.role === "dono_frota"){
-    areaAdmin.style.display="block";
+    document.getElementById("areaAdmin").style.display="block";
   }
 
-  loginBox.style.display="none";
-  sistema.style.display="block";
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("sistema").style.display="block";
 
-  carregarVeiculos();
-
-}
-
-// ————————————————————————————————
-// 🔐 LOGOUT
-// ————————————————————————————————
-
-async function logout(){
-  await supabase.auth.signOut();
-  location.reload();
-}
-
-// ————————————————————————————————
-// 🚗 CARREGAR VEÍCULOS
-// ————————————————————————————————
-
-async function carregarVeiculos(){
-  const { data } = await supabase.from("veiculos").select("*");
-  selectVeiculo.innerHTML="";
-  data.forEach(v=>{
-    selectVeiculo.innerHTML+=`<option value="${v.id}">${v.nome}</option>`;
-  });
-}
-
-// ————————————————————————————————
-// 🗑 REMOVER VEÍCULO
-// ————————————————————————————————
-
-async function removerVeiculo(){
-  await supabase.from("veiculos")
-    .delete()
-    .eq("id",selectVeiculo.value);
-
-  carregarVeiculos();
-}
-
-// ————————————————————————————————
-// 📍 BUSCAR ÚLTIMO KM
-// ————————————————————————————————
-
-async function buscarUltimoKM(id){
-  const { data } = await supabase
-    .from("lancamentos")
-    .select("km_final")
-    .eq("veiculo_id",id)
-    .order("created_at",{ascending:false})
-    .limit(1);
-
-  if(data.length>0) return data[0].km_final;
-
-  const { data: v } = await supabase
-    .from("veiculos")
-    .select("km_inicial")
-    .eq("id",id)
-    .single();
-
-  return v.km_inicial;
-}
-
-// ————————————————————————————————
-// 💾 SALVAR LANÇAMENTO
-// ————————————————————————————————
-
-async function lancar(){
-
-  let veiculo_id = selectVeiculo.value;
-  let kmInicialAtual = await buscarUltimoKM(veiculo_id);
-
-  await supabase.from("lancamentos").insert([{
-    veiculo_id,
-    cliente:cliente.value,
-    descricao:descricao.value,
-    quantidade:quantidade.value,
-    valor:valor.value,
-    despesa:despesa.value,
-    km_inicial:kmInicialAtual,
-    km_final:kmFinal.value,
-    data_inicio:dataInicio.value,
-    data_fim:dataFim.value,
-    user_id:usuarioAtual.id
-  }]);
-
-  alert("Salvo!");
-}
-
-// ————————————————————————————————
-// 📊 FILTRO POR PERÍODO
-// ————————————————————————————————
-
-async function filtrarPeriodo(){
-
-  const { data } = await supabase
-    .from("lancamentos")
-    .select(`*,veiculos(nome)`)
-    .gte("data_inicio",filtroInicio.value)
-    .lte("data_fim",filtroFim.value);
-
-  montarTabela(data);
-}
-
-function montarTabela(data){
-  tabela.innerHTML="";
-  let total=0;
-
-  data.forEach(item=>{
-    let km=item.km_final-item.km_inicial;
-    let lucro=item.valor-item.despesa;
-    total+=lucro;
-
-    tabela.innerHTML+=`
-    <tr>
-    <td>${item.veiculos.nome}</td>
-    <td>${item.cliente}</td>
-    <td>${km}</td>
-    <td>R$ ${lucro}</td>
-    </tr>`;
-  });
-
-  totalGeral.innerText=total.toFixed(2);
-}
-
-// ————————————————————————————————
-// 📈 DASHBOARD
-// ————————————————————————————————
-
-async function gerarGrafico(){
-
-  const { data } = await supabase
-    .from("lancamentos")
-    .select(`valor,despesa,veiculos(nome)`);
-
-  let resumo={};
-  data.forEach(i=>{
-    let lucro=i.valor-i.despesa;
-    let nome=i.veiculos.nome;
-    if(!resumo[nome]) resumo[nome]=0;
-    resumo[nome]+=lucro;
-  });
-
-  new Chart(document.getElementById("grafico"),{
-    type:"bar",
-    data:{
-      labels:Object.keys(resumo),
-      datasets:[{label:"Lucro",data:Object.values(resumo)}]
-    }
-  });
-}
-
-// ————————————————————————————————
-// 📄 PDF
-// ————————————————————————————————
-
-async function gerarPDF(){
-
-  const { jsPDF } = window.jspdf;
-  const doc=new jsPDF();
-
-  const { data } = await supabase
-    .from("lancamentos")
-    .select(`*,veiculos(nome)`);
-
-  let y=20;
-  let total=0;
-
-  doc.text("RELATÓRIO FROTA",20,10);
-
-  data.forEach(i=>{
-    let lucro=i.valor-i.despesa;
-    total+=lucro;
-    doc.text(`${i.veiculos.nome} - ${i.cliente} - R$ ${lucro}`,10,y);
-    y+=7;
-    if(y>270){doc.addPage();y=20;}
-  });
-
-  doc.text(`TOTAL: R$ ${total.toFixed(2)}`,10,y+10);
-  doc.save("Relatorio_Frota.pdf");
-}
-
-// ————————————————————————————————
-// 👤 CADASTRAR USUÁRIO (ADMIN)
-// ————————————————————————————————
-
-async function cadastrarUsuario(){
-
-  if(perfilAtual.role !== "super_admin" &&
-     perfilAtual.role !== "dono_frota"){
-    alert("Sem permissão");
-    return;
-  }
-
-  const { data: novoAuth, error } = await supabase.auth.signUp({
-    email: cadEmail.value,
-    password: cadSenha.value
-  });
-
-  if(error){ alert(error.message); return; }
-
-  await supabase.from("profiles").insert([{
-    id: novoAuth.user.id,
-    empresa_id: perfilAtual.empresa_id,
-    nome: cadNome.value,
-    role: cadRole.value,
-    ativo: true
-  }]);
-
-  alert("Usuário cadastrado!");
 }
 
 </script>
+
 </body>
 </html>
