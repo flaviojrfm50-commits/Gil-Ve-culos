@@ -2,79 +2,61 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Relatório Mês de Janeiro</title>
+<title>Controle de Veículos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
-    font-family: Arial, sans-serif;
-    background:#f4f4f4;
+    font-family: Arial;
+    background:#f2f2f2;
     margin:0;
     padding:20px;
 }
-
 .container{
-    max-width:1100px;
+    max-width:1200px;
     margin:auto;
     background:#fff;
     padding:20px;
     border-radius:10px;
     box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
-
 h2{
     text-align:center;
-    margin-bottom:20px;
 }
-
-.form-grid{
-    display:grid;
-    grid-template-columns: repeat(6,1fr);
-    gap:10px;
-    margin-bottom:15px;
-}
-
-input{
+input, select{
     padding:8px;
     border-radius:6px;
     border:1px solid #ccc;
-    width:100%;
+    margin:5px;
 }
-
 button{
-    padding:10px;
+    padding:8px 12px;
     border:none;
-    background:#28a745;
+    background:#007bff;
     color:#fff;
     border-radius:6px;
     cursor:pointer;
 }
-
 button:hover{
-    background:#218838;
+    background:#0056b3;
 }
-
 table{
     width:100%;
     border-collapse:collapse;
     margin-top:20px;
 }
-
 th, td{
     border:1px solid #ccc;
     padding:8px;
     text-align:center;
 }
-
 th{
-    background:#343a40;
+    background:#333;
     color:#fff;
 }
-
 .total{
     margin-top:15px;
     font-weight:bold;
-    font-size:16px;
 }
 </style>
 </head>
@@ -82,98 +64,141 @@ th{
 
 <div class="container">
 
-<h2>RELATÓRIO MÊS DE JANEIRO</h2>
+<h2>RELATÓRIO MENSAL DE VEÍCULOS</h2>
 
-<div class="form-grid">
-    <input type="text" id="veiculo" placeholder="Veículo">
-    <input type="text" id="placa" placeholder="Placa">
-    <input type="number" id="kmInicial" placeholder="KM Inicial">
-    <input type="number" id="kmFinal" placeholder="KM Final">
-    <input type="text" id="cliente" placeholder="Cliente">
-    <input type="text" id="descricao" placeholder="Descrição">
+<label>Mês:</label>
+<select id="mes">
+<option>Janeiro</option>
+<option>Fevereiro</option>
+<option>Março</option>
+<option>Abril</option>
+<option>Maio</option>
+<option>Junho</option>
+<option>Julho</option>
+<option>Agosto</option>
+<option>Setembro</option>
+<option>Outubro</option>
+<option>Novembro</option>
+<option>Dezembro</option>
+</select>
 
-    <input type="number" id="quantidade" placeholder="Quantidade">
-    <input type="number" id="valor" placeholder="Valor">
-    <input type="number" id="despesa" placeholder="Despesa">
-</div>
+<h3>Cadastro de Veículo</h3>
+<input type="text" id="veiculoNome" placeholder="Veículo">
+<input type="text" id="placa" placeholder="Placa">
+<input type="number" id="kmInicial" placeholder="KM Inicial">
+<button onclick="cadastrarVeiculo()">Cadastrar</button>
 
-<button onclick="adicionar()">Adicionar Registro</button>
+<h3>Lançamento</h3>
+
+<select id="selectVeiculo"></select>
+<input type="text" id="cliente" placeholder="Cliente">
+<input type="text" id="descricao" placeholder="Descrição">
+<input type="number" id="quantidade" placeholder="Quantidade">
+<input type="number" id="valor" placeholder="Valor">
+<input type="number" id="despesa" placeholder="Despesa">
+<input type="number" id="kmFinal" placeholder="KM Final">
+<button onclick="lancar()">Lançar</button>
 
 <table>
 <thead>
 <tr>
-    <th>Veículo</th>
-    <th>Placa</th>
-    <th>KM Inicial</th>
-    <th>KM Final</th>
-    <th>KM Rodado</th>
-    <th>Cliente</th>
-    <th>Descrição</th>
-    <th>Quant.</th>
-    <th>Valor</th>
-    <th>Despesa</th>
+<th>Veículo</th>
+<th>Placa</th>
+<th>Cliente</th>
+<th>Descrição</th>
+<th>Quant.</th>
+<th>Valor</th>
+<th>Despesa</th>
+<th>KM Inicial</th>
+<th>KM Final</th>
+<th>KM Rodado</th>
+<th>Mês</th>
 </tr>
 </thead>
-<tbody id="tabela">
-</tbody>
+<tbody id="tabela"></tbody>
 </table>
 
 <div class="total">
-    Total Valor: R$ <span id="totalValor">0.00</span> |
-    Total Despesas: R$ <span id="totalDespesa">0.00</span>
+Total Valor: R$ <span id="totalValor">0.00</span> |
+Total Despesa: R$ <span id="totalDespesa">0.00</span> |
+Lucro: R$ <span id="lucro">0.00</span>
 </div>
 
 </div>
 
 <script>
+
+let veiculos = [];
 let totalValor = 0;
 let totalDespesa = 0;
 
-function adicionar(){
-
-    let veiculo = document.getElementById("veiculo").value;
+function cadastrarVeiculo(){
+    let nome = document.getElementById("veiculoNome").value;
     let placa = document.getElementById("placa").value;
-    let kmInicial = parseFloat(document.getElementById("kmInicial").value) || 0;
-    let kmFinal = parseFloat(document.getElementById("kmFinal").value) || 0;
+    let kmInicial = parseFloat(document.getElementById("kmInicial").value);
+
+    let veiculo = {
+        id: Date.now(),
+        nome,
+        placa,
+        kmAtual: kmInicial
+    };
+
+    veiculos.push(veiculo);
+    atualizarSelect();
+}
+
+function atualizarSelect(){
+    let select = document.getElementById("selectVeiculo");
+    select.innerHTML = "";
+
+    veiculos.forEach(v => {
+        select.innerHTML += `<option value="${v.id}">${v.nome} - ${v.placa}</option>`;
+    });
+}
+
+function lancar(){
+
+    let id = document.getElementById("selectVeiculo").value;
     let cliente = document.getElementById("cliente").value;
     let descricao = document.getElementById("descricao").value;
     let quantidade = parseFloat(document.getElementById("quantidade").value) || 0;
     let valor = parseFloat(document.getElementById("valor").value) || 0;
     let despesa = parseFloat(document.getElementById("despesa").value) || 0;
+    let kmFinal = parseFloat(document.getElementById("kmFinal").value) || 0;
+    let mes = document.getElementById("mes").value;
 
+    let veiculo = veiculos.find(v => v.id == id);
+
+    let kmInicial = veiculo.kmAtual;
     let kmRodado = kmFinal - kmInicial;
+
+    veiculo.kmAtual = kmFinal;
 
     totalValor += valor;
     totalDespesa += despesa;
 
     document.getElementById("totalValor").innerText = totalValor.toFixed(2);
     document.getElementById("totalDespesa").innerText = totalDespesa.toFixed(2);
+    document.getElementById("lucro").innerText = (totalValor - totalDespesa).toFixed(2);
 
-    let tabela = document.getElementById("tabela");
-
-    let linha = `
+    document.getElementById("tabela").innerHTML += `
     <tr>
-        <td>${veiculo}</td>
-        <td>${placa}</td>
-        <td>${kmInicial}</td>
-        <td>${kmFinal}</td>
-        <td>${kmRodado}</td>
+        <td>${veiculo.nome}</td>
+        <td>${veiculo.placa}</td>
         <td>${cliente}</td>
         <td>${descricao}</td>
         <td>${quantidade}</td>
         <td>R$ ${valor.toFixed(2)}</td>
         <td>R$ ${despesa.toFixed(2)}</td>
+        <td>${kmInicial}</td>
+        <td>${kmFinal}</td>
+        <td>${kmRodado}</td>
+        <td>${mes}</td>
     </tr>
     `;
-
-    tabela.innerHTML += linha;
-
-    limpar();
 }
 
-function limpar(){
-    document.querySelectorAll("input").forEach(input => input.value = "");
-}
 </script>
 
 </body>
