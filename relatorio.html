@@ -2,71 +2,31 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Controle de Veículos</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body{
-    font-family: Arial;
-    background:#f2f2f2;
-    margin:0;
-    padding:20px;
-}
-.container{
-    max-width:1200px;
-    margin:auto;
-    background:#fff;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.1);
-}
-h2{
-    text-align:center;
-}
-input, select{
-    padding:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
-    margin:5px;
-}
-button{
-    padding:8px 12px;
-    border:none;
-    background:#007bff;
-    color:#fff;
-    border-radius:6px;
-    cursor:pointer;
-}
-button:hover{
-    background:#0056b3;
-}
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-}
-th, td{
-    border:1px solid #ccc;
-    padding:8px;
-    text-align:center;
-}
-th{
-    background:#333;
-    color:#fff;
-}
-.total{
-    margin-top:15px;
-    font-weight:bold;
-}
-</style>
+<title>Controle Profissional Frota</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<div class="container">
+<h2>Controle de Veículos</h2>
 
-<h2>RELATÓRIO MENSAL DE VEÍCULOS</h2>
+<h3>Cadastrar Veículo</h3>
+<input id="nome" placeholder="Nome">
+<input id="placa" placeholder="Placa">
+<input id="kmInicial" type="number" placeholder="KM Inicial">
+<button onclick="cadastrarVeiculo()">Salvar Veículo</button>
 
-<label>Mês:</label>
+<hr>
+
+<h3>Lançamento</h3>
+
+<select id="selectVeiculo"></select>
+<input id="cliente" placeholder="Cliente">
+<input id="descricao" placeholder="Descrição">
+<input id="quantidade" type="number" placeholder="Quantidade">
+<input id="valor" type="number" placeholder="Valor">
+<input id="despesa" type="number" placeholder="Despesa">
+<input id="kmFinal" type="number" placeholder="KM Final">
+
 <select id="mes">
 <option>Janeiro</option>
 <option>Fevereiro</option>
@@ -82,122 +42,95 @@ th{
 <option>Dezembro</option>
 </select>
 
-<h3>Cadastro de Veículo</h3>
-<input type="text" id="veiculoNome" placeholder="Veículo">
-<input type="text" id="placa" placeholder="Placa">
-<input type="number" id="kmInicial" placeholder="KM Inicial">
-<button onclick="cadastrarVeiculo()">Cadastrar</button>
-
-<h3>Lançamento</h3>
-
-<select id="selectVeiculo"></select>
-<input type="text" id="cliente" placeholder="Cliente">
-<input type="text" id="descricao" placeholder="Descrição">
-<input type="number" id="quantidade" placeholder="Quantidade">
-<input type="number" id="valor" placeholder="Valor">
-<input type="number" id="despesa" placeholder="Despesa">
-<input type="number" id="kmFinal" placeholder="KM Final">
-<button onclick="lancar()">Lançar</button>
-
-<table>
-<thead>
-<tr>
-<th>Veículo</th>
-<th>Placa</th>
-<th>Cliente</th>
-<th>Descrição</th>
-<th>Quant.</th>
-<th>Valor</th>
-<th>Despesa</th>
-<th>KM Inicial</th>
-<th>KM Final</th>
-<th>KM Rodado</th>
-<th>Mês</th>
-</tr>
-</thead>
-<tbody id="tabela"></tbody>
-</table>
-
-<div class="total">
-Total Valor: R$ <span id="totalValor">0.00</span> |
-Total Despesa: R$ <span id="totalDespesa">0.00</span> |
-Lucro: R$ <span id="lucro">0.00</span>
-</div>
-
-</div>
+<button onclick="lancar()">Salvar Lançamento</button>
 
 <script>
 
-let veiculos = [];
-let totalValor = 0;
-let totalDespesa = 0;
+const supabase = window.supabase.createClient(
+  "https://bzgvbghxmebdjqnlakbj.supabase.co",
+  "sb_publishable_IyvZNwtgkvECR0QVlYbhzw_zPL1TMJv"
+);
 
-function cadastrarVeiculo(){
-    let nome = document.getElementById("veiculoNome").value;
-    let placa = document.getElementById("placa").value;
-    let kmInicial = parseFloat(document.getElementById("kmInicial").value);
+async function carregarVeiculos(){
+  const { data } = await supabase.from("veiculos").select("*");
 
-    let veiculo = {
-        id: Date.now(),
-        nome,
-        placa,
-        kmAtual: kmInicial
-    };
+  let select = document.getElementById("selectVeiculo");
+  select.innerHTML = "";
 
-    veiculos.push(veiculo);
-    atualizarSelect();
+  data.forEach(v=>{
+    select.innerHTML += `<option value="${v.id}">${v.nome} - ${v.placa}</option>`;
+  });
 }
 
-function atualizarSelect(){
-    let select = document.getElementById("selectVeiculo");
-    select.innerHTML = "";
+async function cadastrarVeiculo(){
 
-    veiculos.forEach(v => {
-        select.innerHTML += `<option value="${v.id}">${v.nome} - ${v.placa}</option>`;
-    });
+  let nome = document.getElementById("nome").value;
+  let placa = document.getElementById("placa").value;
+  let kmInicial = document.getElementById("kmInicial").value;
+
+  await supabase.from("veiculos").insert([
+    { nome, placa, km_inicial: kmInicial }
+  ]);
+
+  alert("Veículo salvo!");
+  carregarVeiculos();
 }
 
-function lancar(){
+async function buscarUltimoKM(veiculo_id){
 
-    let id = document.getElementById("selectVeiculo").value;
-    let cliente = document.getElementById("cliente").value;
-    let descricao = document.getElementById("descricao").value;
-    let quantidade = parseFloat(document.getElementById("quantidade").value) || 0;
-    let valor = parseFloat(document.getElementById("valor").value) || 0;
-    let despesa = parseFloat(document.getElementById("despesa").value) || 0;
-    let kmFinal = parseFloat(document.getElementById("kmFinal").value) || 0;
-    let mes = document.getElementById("mes").value;
+  const { data } = await supabase
+    .from("lancamentos")
+    .select("km_final")
+    .eq("veiculo_id", veiculo_id)
+    .order("created_at", { ascending: false })
+    .limit(1);
 
-    let veiculo = veiculos.find(v => v.id == id);
+  if(data.length > 0){
+    return data[0].km_final;
+  }else{
+    // se não tiver lançamento, pega km inicial do veículo
+    const { data: veiculo } = await supabase
+      .from("veiculos")
+      .select("km_inicial")
+      .eq("id", veiculo_id)
+      .single();
 
-    let kmInicial = veiculo.kmAtual;
-    let kmRodado = kmFinal - kmInicial;
-
-    veiculo.kmAtual = kmFinal;
-
-    totalValor += valor;
-    totalDespesa += despesa;
-
-    document.getElementById("totalValor").innerText = totalValor.toFixed(2);
-    document.getElementById("totalDespesa").innerText = totalDespesa.toFixed(2);
-    document.getElementById("lucro").innerText = (totalValor - totalDespesa).toFixed(2);
-
-    document.getElementById("tabela").innerHTML += `
-    <tr>
-        <td>${veiculo.nome}</td>
-        <td>${veiculo.placa}</td>
-        <td>${cliente}</td>
-        <td>${descricao}</td>
-        <td>${quantidade}</td>
-        <td>R$ ${valor.toFixed(2)}</td>
-        <td>R$ ${despesa.toFixed(2)}</td>
-        <td>${kmInicial}</td>
-        <td>${kmFinal}</td>
-        <td>${kmRodado}</td>
-        <td>${mes}</td>
-    </tr>
-    `;
+    return veiculo.km_inicial;
+  }
 }
+
+async function lancar(){
+
+  let veiculo_id = document.getElementById("selectVeiculo").value;
+
+  let cliente = document.getElementById("cliente").value;
+  let descricao = document.getElementById("descricao").value;
+  let quantidade = document.getElementById("quantidade").value;
+  let valor = document.getElementById("valor").value;
+  let despesa = document.getElementById("despesa").value;
+  let kmFinal = document.getElementById("kmFinal").value;
+  let mes = document.getElementById("mes").value;
+
+  let kmInicial = await buscarUltimoKM(veiculo_id);
+
+  await supabase.from("lancamentos").insert([
+    {
+      veiculo_id,
+      cliente,
+      descricao,
+      quantidade,
+      valor,
+      despesa,
+      km_inicial: kmInicial,
+      km_final: kmFinal,
+      mes
+    }
+  ]);
+
+  alert("Lançamento salvo com KM automático!");
+}
+
+carregarVeiculos();
 
 </script>
 
