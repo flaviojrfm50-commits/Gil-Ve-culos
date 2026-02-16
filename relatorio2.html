@@ -115,15 +115,10 @@ th{background:#1f2937;color:#fff;}
 // ❗ DECLARAÇÃO DO SUPABASE (UMA ÚNICA VEZ)
 // ————————————————————————————————
 
-if (!window.supabaseClient) {
-  window.supabaseClient = window.supabase.createClient(
-    "https://bzgvbghxmebdjqnlakbj.supabase.co",
-    "sb_publishable_IyvZNwtgkvECR0QVlYbhzw_zPL1TMJv"
-  );
-}
-
-const supabase = window.supabaseClient;
-
+const supabase = window.supabase.createClient(
+  "https://bzgvbghxmebdjqnlakbj.supabase.co",
+  "sb_publishable_IyvZNwtgkvECR0QVlYbhzw_zPL1TMJv"
+);
 
 let usuarioAtual;
 let perfilAtual;
