@@ -15,15 +15,15 @@ const supabase = createClient(
 
 /* ================= INIT ================= */
 async function init(){
-  carregarVeiculos();
-  carregarLancamentos();
+  await carregarVeiculos();
+  await carregarLancamentos();
 }
 
 /* ================= CADASTRAR VEÍCULO ================= */
 window.cadastrarVeiculo = async function(){
 
-  const placa = document.getElementById("placa").value;
-  const modelo = document.getElementById("modelo").value;
+  const placa = document.getElementById("placa").value.trim().toUpperCase();
+  const modelo = document.getElementById("modelo").value.trim();
 
   if(!placa || !modelo){
     alert("Preencha placa e modelo");
@@ -49,14 +49,19 @@ window.cadastrarVeiculo = async function(){
 /* ================= LISTAR VEÍCULOS ================= */
 async function carregarVeiculos(){
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("veiculos")
     .select("*");
+
+  if(error){
+    console.log(error);
+    return;
+  }
 
   const select = document.getElementById("selectVeiculo");
   select.innerHTML="<option value=''>Selecione</option>";
 
-  data.forEach(v=>{
+  data?.forEach(v=>{
     select.innerHTML += `<option value="${v.id}">${v.modelo} - ${v.placa}</option>`;
   });
 }
@@ -65,12 +70,11 @@ async function carregarVeiculos(){
 window.cadastrarLancamento = async function(){
 
   const veiculo_id = document.getElementById("selectVeiculo").value;
-  const cliente = document.getElementById("cliente").value;
-  const descricao = document.getElementById("descricao").value;
+  const cliente = document.getElementById("cliente").value.trim();
+  const descricao = document.getElementById("descricao").value.trim();
 
   const km_inicial = parseFloat(document.getElementById("kmInicial").value) || 0;
   const km_final = parseFloat(document.getElementById("kmFinal").value) || 0;
-
   const quantidade = parseFloat(document.getElementById("quantidade").value) || 0;
   const valor = parseFloat(document.getElementById("valor").value) || 0;
   const despesa = parseFloat(document.getElementById("despesa").value) || 0;
@@ -78,8 +82,13 @@ window.cadastrarLancamento = async function(){
   const data_inicio = document.getElementById("dataInicio").value;
   const data_fim = document.getElementById("dataFim").value;
 
-  if(!veiculo_id || !data_inicio){
-    alert("Selecione veículo e data");
+  if(!veiculo_id){
+    alert("Selecione um veículo");
+    return;
+  }
+
+  if(!data_inicio){
+    alert("Informe a data inicial");
     return;
   }
 
@@ -105,26 +114,31 @@ window.cadastrarLancamento = async function(){
     return;
   }
 
-  limpar();
+  limparFormulario();
   carregarLancamentos();
 }
 
 /* ================= LISTAR LANÇAMENTOS ================= */
 async function carregarLancamentos(){
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("lancamentos")
     .select("*, veiculos(modelo,placa)")
     .order("created_at", { ascending:false });
 
-  let totalLucro = 0;
+  if(error){
+    console.log(error);
+    return;
+  }
+
   const tabela = document.getElementById("tabela");
   tabela.innerHTML="";
+  let totalLucro = 0;
 
-  data.forEach(l=>{
+  data?.forEach(l=>{
 
-    let kmRodado = (l.km_final || 0) - (l.km_inicial || 0);
-    let lucro = (l.valor || 0) - (l.despesa || 0);
+    const kmRodado = (l.km_final || 0) - (l.km_inicial || 0);
+    const lucro = (l.valor || 0) - (l.despesa || 0);
 
     totalLucro += lucro;
 
@@ -132,7 +146,7 @@ async function carregarLancamentos(){
       <tr>
         <td>${l.veiculos?.modelo || ''}</td>
         <td>${l.veiculos?.placa || ''}</td>
-        <td>${l.mes || ''}</td>
+        <td style="text-transform:capitalize">${l.mes || ''}</td>
         <td>${l.km_inicial || 0}</td>
         <td>${l.km_final || 0}</td>
         <td>${kmRodado}</td>
@@ -140,7 +154,7 @@ async function carregarLancamentos(){
         <td>${l.descricao || ''}</td>
         <td>R$ ${Number(l.valor || 0).toFixed(2)}</td>
         <td>R$ ${Number(l.despesa || 0).toFixed(2)}</td>
-        <td>R$ ${lucro.toFixed(2)}</td>
+        <td style="font-weight:bold">R$ ${lucro.toFixed(2)}</td>
       </tr>
     `;
   });
@@ -148,8 +162,10 @@ async function carregarLancamentos(){
   document.getElementById("total").innerText = totalLucro.toFixed(2);
 }
 
-function limpar(){
-  document.querySelectorAll("input").forEach(i=> i.value="");
+/* ================= LIMPAR ================= */
+function limparFormulario(){
+  document.querySelectorAll("#cliente, #descricao, #kmInicial, #kmFinal, #quantidade, #valor, #despesa, #dataInicio, #dataFim")
+  .forEach(i=> i.value="");
 }
 
 window.onload = init;
