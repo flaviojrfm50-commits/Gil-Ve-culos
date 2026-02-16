@@ -2,37 +2,47 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Controle Frota Estável</title>
+<title>Controle Frota</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const { jsPDF } = window.jspdf;
 
 const supabase = createClient(
   "https://bzgvbghxmebdjqnlakbj.supabase.co",
   "sb_publishable_IyvZNwtgkvECR0QVlYbhzw_zPL1TMJv"
 );
 
-/* ================= INIT ================= */
-async function init(){
-  await carregarVeiculos();
-  await carregarLancamentos();
+let dadosAtuais = [];
+
+/* ================= VERIFICAR SESSÃO ================= */
+async function verificarSessao(){
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if(session){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("sistema").style.display="block";
+    carregarVeiculos();
+    carregarLancamentos();
+  } else {
+    document.getElementById("loginBox").style.display="block";
+    document.getElementById("sistema").style.display="none";
+  }
 }
 
-/* ================= CADASTRAR VEÍCULO ================= */
-window.cadastrarVeiculo = async function(){
+/* ================= LOGIN ================= */
+window.login = async function(){
 
-  const placa = document.getElementById("placa").value.trim().toUpperCase();
-  const modelo = document.getElementById("modelo").value.trim();
+  const email = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
 
-  if(!placa || !modelo){
-    alert("Preencha placa e modelo");
-    return;
-  }
-
-  const { error } = await supabase.from("veiculos").insert({
-    placa,
-    modelo
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: senha
   });
 
   if(error){
@@ -40,23 +50,55 @@ window.cadastrarVeiculo = async function(){
     return;
   }
 
+  verificarSessao();
+}
+
+/* ================= CRIAR CONTA ================= */
+window.cadastrarConta = async function(){
+
+  const email = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password: senha
+  });
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  alert("Conta criada! Agora faça login.");
+}
+
+/* ================= LOGOUT ================= */
+window.logout = async function(){
+  await supabase.auth.signOut();
+  verificarSessao();
+}
+
+/* ================= VEICULOS ================= */
+window.cadastrarVeiculo = async function(){
+
+  const placa = document.getElementById("placa").value;
+  const modelo = document.getElementById("modelo").value;
+
+  if(!placa || !modelo){
+    alert("Preencha placa e modelo");
+    return;
+  }
+
+  await supabase.from("veiculos").insert({ placa, modelo });
+
   document.getElementById("placa").value="";
   document.getElementById("modelo").value="";
-
   carregarVeiculos();
 }
 
-/* ================= LISTAR VEÍCULOS ================= */
 async function carregarVeiculos(){
 
-  const { data, error } = await supabase
-    .from("veiculos")
-    .select("*");
-
-  if(error){
-    console.log(error);
-    return;
-  }
+  const { data } = await supabase.from("veiculos").select("*");
 
   const select = document.getElementById("selectVeiculo");
   select.innerHTML="<option value=''>Selecione</option>";
@@ -66,12 +108,12 @@ async function carregarVeiculos(){
   });
 }
 
-/* ================= CADASTRAR LANÇAMENTO ================= */
+/* ================= LANÇAMENTOS ================= */
 window.cadastrarLancamento = async function(){
 
   const veiculo_id = document.getElementById("selectVeiculo").value;
-  const cliente = document.getElementById("cliente").value.trim();
-  const descricao = document.getElementById("descricao").value.trim();
+  const cliente = document.getElementById("cliente").value;
+  const descricao = document.getElementById("descricao").value;
 
   const km_inicial = parseFloat(document.getElementById("kmInicial").value) || 0;
   const km_final = parseFloat(document.getElementById("kmFinal").value) || 0;
@@ -82,20 +124,15 @@ window.cadastrarLancamento = async function(){
   const data_inicio = document.getElementById("dataInicio").value;
   const data_fim = document.getElementById("dataFim").value;
 
-  if(!veiculo_id){
-    alert("Selecione um veículo");
-    return;
-  }
-
-  if(!data_inicio){
-    alert("Informe a data inicial");
+  if(!veiculo_id || !data_inicio){
+    alert("Selecione veículo e data");
     return;
   }
 
   const mes = new Date(data_inicio)
     .toLocaleString('pt-BR', { month: 'long' });
 
-  const { error } = await supabase.from("lancamentos").insert({
+  await supabase.from("lancamentos").insert({
     veiculo_id,
     cliente,
     descricao,
@@ -109,44 +146,33 @@ window.cadastrarLancamento = async function(){
     mes
   });
 
-  if(error){
-    alert(error.message);
-    return;
-  }
-
-  limparFormulario();
+  limpar();
   carregarLancamentos();
 }
 
-/* ================= LISTAR LANÇAMENTOS ================= */
 async function carregarLancamentos(){
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("lancamentos")
     .select("*, veiculos(modelo,placa)")
     .order("created_at", { ascending:false });
 
-  if(error){
-    console.log(error);
-    return;
-  }
+  dadosAtuais = data || [];
 
   const tabela = document.getElementById("tabela");
   tabela.innerHTML="";
   let totalLucro = 0;
 
-  data?.forEach(l=>{
-
-    const kmRodado = (l.km_final || 0) - (l.km_inicial || 0);
-    const lucro = (l.valor || 0) - (l.despesa || 0);
-
+  dadosAtuais.forEach(l=>{
+    let kmRodado = (l.km_final || 0) - (l.km_inicial || 0);
+    let lucro = (l.valor || 0) - (l.despesa || 0);
     totalLucro += lucro;
 
     tabela.innerHTML += `
       <tr>
         <td>${l.veiculos?.modelo || ''}</td>
         <td>${l.veiculos?.placa || ''}</td>
-        <td style="text-transform:capitalize">${l.mes || ''}</td>
+        <td>${l.mes || ''}</td>
         <td>${l.km_inicial || 0}</td>
         <td>${l.km_final || 0}</td>
         <td>${kmRodado}</td>
@@ -154,7 +180,7 @@ async function carregarLancamentos(){
         <td>${l.descricao || ''}</td>
         <td>R$ ${Number(l.valor || 0).toFixed(2)}</td>
         <td>R$ ${Number(l.despesa || 0).toFixed(2)}</td>
-        <td style="font-weight:bold">R$ ${lucro.toFixed(2)}</td>
+        <td>R$ ${lucro.toFixed(2)}</td>
       </tr>
     `;
   });
@@ -162,13 +188,38 @@ async function carregarLancamentos(){
   document.getElementById("total").innerText = totalLucro.toFixed(2);
 }
 
-/* ================= LIMPAR ================= */
-function limparFormulario(){
-  document.querySelectorAll("#cliente, #descricao, #kmInicial, #kmFinal, #quantidade, #valor, #despesa, #dataInicio, #dataFim")
-  .forEach(i=> i.value="");
+/* ================= GERAR PDF ================= */
+window.gerarPDF = function(){
+
+  const doc = new jsPDF();
+  let y = 10;
+  let total = 0;
+
+  doc.text("RELATÓRIO CONTROLE FROTA", 10, y);
+  y += 10;
+
+  dadosAtuais.forEach(l=>{
+    let lucro = (l.valor || 0) - (l.despesa || 0);
+    total += lucro;
+
+    doc.text(
+      `${l.veiculos?.modelo} | ${l.veiculos?.placa} | ${l.mes} | R$ ${lucro.toFixed(2)}`,
+      10,
+      y
+    );
+    y += 8;
+  });
+
+  y += 10;
+  doc.text(`TOTAL LUCRO: R$ ${total.toFixed(2)}`, 10, y);
+  doc.save("relatorio_frota.pdf");
 }
 
-window.onload = init;
+function limpar(){
+  document.querySelectorAll("#sistema input").forEach(i=> i.value="");
+}
+
+window.onload = verificarSessao;
 
 </script>
 
@@ -181,13 +232,24 @@ button{padding:8px 12px;background:#28a745;color:#fff;border:none;border-radius:
 table{width:100%;margin-top:20px;border-collapse:collapse}
 th,td{border:1px solid #ccc;padding:6px;text-align:center;font-size:14px}
 th{background:#222;color:#fff}
+.login-box{max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:10px}
 </style>
 </head>
 <body>
 
-<div class="container">
+<div id="loginBox" class="login-box">
+<h2>Login</h2>
+<input id="email" placeholder="Email">
+<input id="senha" type="password" placeholder="Senha">
+<br>
+<button onclick="login()">Entrar</button>
+<button onclick="cadastrarConta()">Criar Conta</button>
+</div>
+
+<div id="sistema" class="container" style="display:none">
 
 <h2>Controle Frota Mensal</h2>
+<button onclick="logout()" style="background:#dc3545">Sair</button>
 
 <h3>Cadastrar Veículo</h3>
 <input id="placa" placeholder="Placa">
@@ -195,7 +257,6 @@ th{background:#222;color:#fff}
 <button onclick="cadastrarVeiculo()">Salvar</button>
 
 <h3>Novo Lançamento</h3>
-
 <select id="selectVeiculo"></select>
 <input type="date" id="dataInicio">
 <input type="date" id="dataFim">
@@ -206,8 +267,10 @@ th{background:#222;color:#fff}
 <input type="number" id="quantidade" placeholder="Quantidade">
 <input type="number" id="valor" placeholder="Valor">
 <input type="number" id="despesa" placeholder="Despesa">
-
 <button onclick="cadastrarLancamento()">Salvar</button>
+
+<br><br>
+<button onclick="gerarPDF()" style="background:#007bff">Gerar Relatório PDF</button>
 
 <table>
 <thead>
