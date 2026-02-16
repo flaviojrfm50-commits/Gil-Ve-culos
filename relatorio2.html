@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Controle de Lançamentos</title>
+<title>Controle Frota</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script type="module">
@@ -15,8 +15,9 @@ const supabase = createClient(
 
 let empresaId;
 
-/* ================= Pegar usuário logado ================= */
-async function carregarUsuario(){
+/* ================= Pegar usuário ================= */
+async function init(){
+
   const { data: { user } } = await supabase.auth.getUser();
   if(!user){
     alert("Faça login primeiro");
@@ -25,196 +26,163 @@ async function carregarUsuario(){
 
   const { data: perfil } = await supabase
     .from("profiles")
-    .select("empresa_id")
+    .select("empresa_id, role")
     .eq("id", user.id)
     .single();
 
   empresaId = perfil.empresa_id;
 
-  carregarRegistros();
+  if(perfil.role === "dono_frota" || perfil.role === "super_admin"){
+    document.getElementById("areaVeiculo").style.display = "block";
+  }
+
+  carregarVeiculos();
+  carregarLancamentos();
 }
 
-/* ================= Adicionar ================= */
-window.adicionar = async function(){
+/* ================= CADASTRAR VEÍCULO ================= */
+window.cadastrarVeiculo = async function(){
 
-  let veiculo = document.getElementById("veiculo").value;
-  let placa = document.getElementById("placa").value;
-  let kmInicial = parseFloat(document.getElementById("kmInicial").value) || 0;
-  let kmFinal = parseFloat(document.getElementById("kmFinal").value) || 0;
-  let cliente = document.getElementById("cliente").value;
-  let descricao = document.getElementById("descricao").value;
-  let quantidade = parseFloat(document.getElementById("quantidade").value) || 0;
-  let valor = parseFloat(document.getElementById("valor").value) || 0;
-  let despesa = parseFloat(document.getElementById("despesa").value) || 0;
+  const placa = document.getElementById("placa").value;
+  const modelo = document.getElementById("modelo").value;
 
-  let kmRodado = kmFinal - kmInicial;
-
-  const { error } = await supabase.from("lancamentos").insert({
-    empresa_id: empresaId,
-    cliente,
-    descricao,
-    km_inicial: kmInicial,
-    km_final: kmFinal,
-    valor,
-    despesa
-  });
-
-  if(error){
-    alert(error.message);
+  if(!placa || !modelo){
+    alert("Preencha todos os campos");
     return;
   }
 
-  limpar();
-  carregarRegistros();
-};
+  await supabase.from("veiculos").insert({
+    empresa_id: empresaId,
+    placa,
+    modelo
+  });
 
-/* ================= Carregar registros ================= */
-async function carregarRegistros(){
+  document.getElementById("placa").value="";
+  document.getElementById("modelo").value="";
+
+  carregarVeiculos();
+}
+
+/* ================= LISTAR VEÍCULOS ================= */
+async function carregarVeiculos(){
+
+  const { data } = await supabase
+    .from("veiculos")
+    .select("*");
+
+  const select = document.getElementById("selectVeiculo");
+  select.innerHTML="";
+
+  data.forEach(v=>{
+    select.innerHTML += `<option value="${v.id}">${v.modelo} - ${v.placa}</option>`;
+  });
+}
+
+/* ================= CADASTRAR LANÇAMENTO ================= */
+window.cadastrarLancamento = async function(){
+
+  const veiculo_id = document.getElementById("selectVeiculo").value;
+  const valor = parseFloat(document.getElementById("valor").value) || 0;
+  const despesa = parseFloat(document.getElementById("despesa").value) || 0;
+  const descricao = document.getElementById("descricao").value;
+
+  await supabase.from("lancamentos").insert({
+    empresa_id: empresaId,
+    veiculo_id,
+    valor,
+    despesa,
+    descricao
+  });
+
+  document.getElementById("valor").value="";
+  document.getElementById("despesa").value="";
+  document.getElementById("descricao").value="";
+
+  carregarLancamentos();
+}
+
+/* ================= LISTAR LANÇAMENTOS ================= */
+async function carregarLancamentos(){
 
   const { data } = await supabase
     .from("lancamentos")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("*, veiculos(modelo,placa)")
+    .order("created_at", { ascending:false });
 
-  let totalValor = 0;
-  let totalDespesa = 0;
-  let tabela = document.getElementById("tabela");
-  tabela.innerHTML = "";
+  let total = 0;
+  const tabela = document.getElementById("tabela");
+  tabela.innerHTML="";
 
-  data.forEach(item => {
+  data.forEach(l=>{
 
-    let kmRodado = item.km_final - item.km_inicial;
-
-    totalValor += Number(item.valor);
-    totalDespesa += Number(item.despesa);
+    let lucro = l.valor - l.despesa;
+    total += lucro;
 
     tabela.innerHTML += `
       <tr>
-        <td>-</td>
-        <td>-</td>
-        <td>${item.km_inicial}</td>
-        <td>${item.km_final}</td>
-        <td>${kmRodado}</td>
-        <td>${item.cliente}</td>
-        <td>${item.descricao}</td>
-        <td>-</td>
-        <td>R$ ${Number(item.valor).toFixed(2)}</td>
-        <td>R$ ${Number(item.despesa).toFixed(2)}</td>
+        <td>${l.veiculos?.modelo}</td>
+        <td>${l.veiculos?.placa}</td>
+        <td>${l.descricao}</td>
+        <td>R$ ${l.valor}</td>
+        <td>R$ ${l.despesa}</td>
+        <td>R$ ${lucro}</td>
       </tr>
     `;
   });
 
-  document.getElementById("totalValor").innerText = totalValor.toFixed(2);
-  document.getElementById("totalDespesa").innerText = totalDespesa.toFixed(2);
+  document.getElementById("total").innerText = total.toFixed(2);
 }
 
-/* ================= Limpar ================= */
-function limpar(){
-  document.querySelectorAll("input").forEach(input => input.value = "");
-}
+window.onload = init;
 
-window.onload = carregarUsuario;
 </script>
 
 <style>
-body{
-    font-family: Arial, sans-serif;
-    background:#f4f4f4;
-    margin:0;
-    padding:20px;
-}
-.container{
-    max-width:1100px;
-    margin:auto;
-    background:#fff;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.1);
-}
-h2{text-align:center;margin-bottom:20px;}
-.form-grid{
-    display:grid;
-    grid-template-columns: repeat(6,1fr);
-    gap:10px;
-    margin-bottom:15px;
-}
-input{
-    padding:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
-    width:100%;
-}
-button{
-    padding:10px;
-    border:none;
-    background:#28a745;
-    color:#fff;
-    border-radius:6px;
-    cursor:pointer;
-}
-button:hover{background:#218838;}
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-}
-th, td{
-    border:1px solid #ccc;
-    padding:8px;
-    text-align:center;
-}
-th{
-    background:#343a40;
-    color:#fff;
-}
-.total{
-    margin-top:15px;
-    font-weight:bold;
-    font-size:16px;
-}
+body{font-family:Arial;background:#f4f4f4;padding:20px}
+.container{max-width:1000px;margin:auto;background:#fff;padding:20px;border-radius:10px}
+h2{text-align:center}
+input,select{padding:8px;margin:5px}
+button{padding:8px 12px;background:#28a745;color:#fff;border:none;border-radius:5px}
+table{width:100%;margin-top:20px;border-collapse:collapse}
+th,td{border:1px solid #ccc;padding:8px;text-align:center}
+th{background:#222;color:#fff}
 </style>
 </head>
 <body>
 
 <div class="container">
-<h2>CONTROLE DE LANÇAMENTOS</h2>
 
-<div class="form-grid">
-    <input type="text" id="veiculo" placeholder="Veículo">
-    <input type="text" id="placa" placeholder="Placa">
-    <input type="number" id="kmInicial" placeholder="KM Inicial">
-    <input type="number" id="kmFinal" placeholder="KM Final">
-    <input type="text" id="cliente" placeholder="Cliente">
-    <input type="text" id="descricao" placeholder="Descrição">
-    <input type="number" id="quantidade" placeholder="Quantidade">
-    <input type="number" id="valor" placeholder="Valor">
-    <input type="number" id="despesa" placeholder="Despesa">
+<h2>Controle Frota</h2>
+
+<div id="areaVeiculo" style="display:none;">
+<h3>Cadastrar Veículo</h3>
+<input id="placa" placeholder="Placa">
+<input id="modelo" placeholder="Modelo">
+<button onclick="cadastrarVeiculo()">Salvar</button>
 </div>
 
-<button onclick="adicionar()">Adicionar Registro</button>
+<h3>Lançamento</h3>
+<select id="selectVeiculo"></select>
+<input id="descricao" placeholder="Descrição">
+<input type="number" id="valor" placeholder="Valor">
+<input type="number" id="despesa" placeholder="Despesa">
+<button onclick="cadastrarLancamento()">Salvar</button>
 
 <table>
 <thead>
 <tr>
-    <th>Veículo</th>
-    <th>Placa</th>
-    <th>KM Inicial</th>
-    <th>KM Final</th>
-    <th>KM Rodado</th>
-    <th>Cliente</th>
-    <th>Descrição</th>
-    <th>Quant.</th>
-    <th>Valor</th>
-    <th>Despesa</th>
+<th>Modelo</th>
+<th>Placa</th>
+<th>Descrição</th>
+<th>Valor</th>
+<th>Despesa</th>
+<th>Lucro</th>
 </tr>
 </thead>
 <tbody id="tabela"></tbody>
 </table>
 
-<div class="total">
-    Total Valor: R$ <span id="totalValor">0.00</span> |
-    Total Despesas: R$ <span id="totalDespesa">0.00</span>
-</div>
+<h3>Total Lucro: R$ <span id="total">0.00</span></h3>
 
 </div>
 
