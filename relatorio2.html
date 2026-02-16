@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Controle Frota</title>
+<title>Controle Frota Estável</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script type="module">
@@ -13,32 +13,8 @@ const supabase = createClient(
   "sb_publishable_IyvZNwtgkvECR0QVlYbhzw_zPL1TMJv"
 );
 
-let empresaId;
-let usuarioId;
-
 /* ================= INIT ================= */
 async function init(){
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if(!user){
-    alert("Faça login primeiro");
-    return;
-  }
-
-  usuarioId = user.id;
-
-  const { data: perfil } = await supabase
-    .from("profiles")
-    .select("empresa_id, role")
-    .eq("id", user.id)
-    .single();
-
-  empresaId = perfil.empresa_id;
-
-  if(perfil.role === "dono_frota" || perfil.role === "super_admin"){
-    document.getElementById("areaVeiculo").style.display = "block";
-  }
-
   carregarVeiculos();
   carregarLancamentos();
 }
@@ -50,12 +26,11 @@ window.cadastrarVeiculo = async function(){
   const modelo = document.getElementById("modelo").value;
 
   if(!placa || !modelo){
-    alert("Preencha todos os campos");
+    alert("Preencha placa e modelo");
     return;
   }
 
   const { error } = await supabase.from("veiculos").insert({
-    empresa_id: empresaId,
     placa,
     modelo
   });
@@ -104,7 +79,7 @@ window.cadastrarLancamento = async function(){
   const data_fim = document.getElementById("dataFim").value;
 
   if(!veiculo_id || !data_inicio){
-    alert("Preencha os campos obrigatórios");
+    alert("Selecione veículo e data");
     return;
   }
 
@@ -112,8 +87,6 @@ window.cadastrarLancamento = async function(){
     .toLocaleString('pt-BR', { month: 'long' });
 
   const { error } = await supabase.from("lancamentos").insert({
-    empresa_id: empresaId,
-    user_id: usuarioId,
     veiculo_id,
     cliente,
     descricao,
@@ -128,12 +101,11 @@ window.cadastrarLancamento = async function(){
   });
 
   if(error){
-    console.log(error);
     alert(error.message);
     return;
   }
 
-  limparCampos();
+  limpar();
   carregarLancamentos();
 }
 
@@ -176,7 +148,7 @@ async function carregarLancamentos(){
   document.getElementById("total").innerText = totalLucro.toFixed(2);
 }
 
-function limparCampos(){
+function limpar(){
   document.querySelectorAll("input").forEach(i=> i.value="");
 }
 
@@ -201,12 +173,10 @@ th{background:#222;color:#fff}
 
 <h2>Controle Frota Mensal</h2>
 
-<div id="areaVeiculo" style="display:none;">
 <h3>Cadastrar Veículo</h3>
 <input id="placa" placeholder="Placa">
 <input id="modelo" placeholder="Modelo">
 <button onclick="cadastrarVeiculo()">Salvar</button>
-</div>
 
 <h3>Novo Lançamento</h3>
 
