@@ -14,8 +14,9 @@ const supabase = createClient(
 );
 
 let empresaId;
+let usuarioId;
 
-/* ================= Pegar usuário ================= */
+/* ================= INIT ================= */
 async function init(){
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -23,6 +24,8 @@ async function init(){
     alert("Faça login primeiro");
     return;
   }
+
+  usuarioId = user.id;
 
   const { data: perfil } = await supabase
     .from("profiles")
@@ -51,11 +54,16 @@ window.cadastrarVeiculo = async function(){
     return;
   }
 
-  await supabase.from("veiculos").insert({
+  const { error } = await supabase.from("veiculos").insert({
     empresa_id: empresaId,
     placa,
     modelo
   });
+
+  if(error){
+    alert(error.message);
+    return;
+  }
 
   document.getElementById("placa").value="";
   document.getElementById("modelo").value="";
@@ -71,7 +79,7 @@ async function carregarVeiculos(){
     .select("*");
 
   const select = document.getElementById("selectVeiculo");
-  select.innerHTML="";
+  select.innerHTML="<option value=''>Selecione</option>";
 
   data.forEach(v=>{
     select.innerHTML += `<option value="${v.id}">${v.modelo} - ${v.placa}</option>`;
@@ -82,22 +90,50 @@ async function carregarVeiculos(){
 window.cadastrarLancamento = async function(){
 
   const veiculo_id = document.getElementById("selectVeiculo").value;
-  const valor = parseFloat(document.getElementById("valor").value) || 0;
-  const despesa = parseFloat(document.getElementById("despesa").value) || 0;
+  const cliente = document.getElementById("cliente").value;
   const descricao = document.getElementById("descricao").value;
 
-  await supabase.from("lancamentos").insert({
+  const km_inicial = parseFloat(document.getElementById("kmInicial").value) || 0;
+  const km_final = parseFloat(document.getElementById("kmFinal").value) || 0;
+
+  const quantidade = parseFloat(document.getElementById("quantidade").value) || 0;
+  const valor = parseFloat(document.getElementById("valor").value) || 0;
+  const despesa = parseFloat(document.getElementById("despesa").value) || 0;
+
+  const data_inicio = document.getElementById("dataInicio").value;
+  const data_fim = document.getElementById("dataFim").value;
+
+  if(!veiculo_id || !data_inicio){
+    alert("Preencha os campos obrigatórios");
+    return;
+  }
+
+  const mes = new Date(data_inicio)
+    .toLocaleString('pt-BR', { month: 'long' });
+
+  const { error } = await supabase.from("lancamentos").insert({
     empresa_id: empresaId,
+    user_id: usuarioId,
     veiculo_id,
+    cliente,
+    descricao,
+    km_inicial,
+    km_final,
+    quantidade,
     valor,
     despesa,
-    descricao
+    data_inicio,
+    data_fim,
+    mes
   });
 
-  document.getElementById("valor").value="";
-  document.getElementById("despesa").value="";
-  document.getElementById("descricao").value="";
+  if(error){
+    console.log(error);
+    alert(error.message);
+    return;
+  }
 
+  limparCampos();
   carregarLancamentos();
 }
 
@@ -109,28 +145,39 @@ async function carregarLancamentos(){
     .select("*, veiculos(modelo,placa)")
     .order("created_at", { ascending:false });
 
-  let total = 0;
+  let totalLucro = 0;
   const tabela = document.getElementById("tabela");
   tabela.innerHTML="";
 
   data.forEach(l=>{
 
-    let lucro = l.valor - l.despesa;
-    total += lucro;
+    let kmRodado = (l.km_final || 0) - (l.km_inicial || 0);
+    let lucro = (l.valor || 0) - (l.despesa || 0);
+
+    totalLucro += lucro;
 
     tabela.innerHTML += `
       <tr>
-        <td>${l.veiculos?.modelo}</td>
-        <td>${l.veiculos?.placa}</td>
-        <td>${l.descricao}</td>
-        <td>R$ ${l.valor}</td>
-        <td>R$ ${l.despesa}</td>
-        <td>R$ ${lucro}</td>
+        <td>${l.veiculos?.modelo || ''}</td>
+        <td>${l.veiculos?.placa || ''}</td>
+        <td>${l.mes || ''}</td>
+        <td>${l.km_inicial || 0}</td>
+        <td>${l.km_final || 0}</td>
+        <td>${kmRodado}</td>
+        <td>${l.cliente || ''}</td>
+        <td>${l.descricao || ''}</td>
+        <td>R$ ${Number(l.valor || 0).toFixed(2)}</td>
+        <td>R$ ${Number(l.despesa || 0).toFixed(2)}</td>
+        <td>R$ ${lucro.toFixed(2)}</td>
       </tr>
     `;
   });
 
-  document.getElementById("total").innerText = total.toFixed(2);
+  document.getElementById("total").innerText = totalLucro.toFixed(2);
+}
+
+function limparCampos(){
+  document.querySelectorAll("input").forEach(i=> i.value="");
 }
 
 window.onload = init;
@@ -139,12 +186,12 @@ window.onload = init;
 
 <style>
 body{font-family:Arial;background:#f4f4f4;padding:20px}
-.container{max-width:1000px;margin:auto;background:#fff;padding:20px;border-radius:10px}
+.container{max-width:1200px;margin:auto;background:#fff;padding:20px;border-radius:10px}
 h2{text-align:center}
 input,select{padding:8px;margin:5px}
 button{padding:8px 12px;background:#28a745;color:#fff;border:none;border-radius:5px}
 table{width:100%;margin-top:20px;border-collapse:collapse}
-th,td{border:1px solid #ccc;padding:8px;text-align:center}
+th,td{border:1px solid #ccc;padding:6px;text-align:center;font-size:14px}
 th{background:#222;color:#fff}
 </style>
 </head>
@@ -152,7 +199,7 @@ th{background:#222;color:#fff}
 
 <div class="container">
 
-<h2>Controle Frota</h2>
+<h2>Controle Frota Mensal</h2>
 
 <div id="areaVeiculo" style="display:none;">
 <h3>Cadastrar Veículo</h3>
@@ -161,11 +208,19 @@ th{background:#222;color:#fff}
 <button onclick="cadastrarVeiculo()">Salvar</button>
 </div>
 
-<h3>Lançamento</h3>
+<h3>Novo Lançamento</h3>
+
 <select id="selectVeiculo"></select>
+<input type="date" id="dataInicio">
+<input type="date" id="dataFim">
+<input id="cliente" placeholder="Cliente">
 <input id="descricao" placeholder="Descrição">
+<input type="number" id="kmInicial" placeholder="KM Inicial">
+<input type="number" id="kmFinal" placeholder="KM Final">
+<input type="number" id="quantidade" placeholder="Quantidade">
 <input type="number" id="valor" placeholder="Valor">
 <input type="number" id="despesa" placeholder="Despesa">
+
 <button onclick="cadastrarLancamento()">Salvar</button>
 
 <table>
@@ -173,6 +228,11 @@ th{background:#222;color:#fff}
 <tr>
 <th>Modelo</th>
 <th>Placa</th>
+<th>Mês</th>
+<th>KM Inicial</th>
+<th>KM Final</th>
+<th>KM Rodado</th>
+<th>Cliente</th>
 <th>Descrição</th>
 <th>Valor</th>
 <th>Despesa</th>
