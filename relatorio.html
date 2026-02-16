@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>ERP Frota Empresarial</title>
+<title>ERP Frota Multiusuário</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -23,12 +23,11 @@ button{padding:8px 12px;border:none;border-radius:6px;cursor:pointer;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{border:1px solid #ddd;padding:8px;text-align:center;}
 th{background:#1f2937;color:#fff;}
-.total-box{display:flex;gap:20px;margin-top:15px;font-weight:bold;}
 </style>
 </head>
 <body>
 
-<header>ERP CONTROLE DE FROTA EMPRESARIAL</header>
+<header>ERP FROTA MULTIUSUÁRIO</header>
 
 <div id="loginBox" class="container">
 <div class="card">
@@ -36,6 +35,7 @@ th{background:#1f2937;color:#fff;}
 <input id="email" placeholder="Email">
 <input id="senha" type="password" placeholder="Senha">
 <button class="btn-primary" onclick="login()">Entrar</button>
+<button onclick="cadastrar()">Criar Conta</button>
 </div>
 </div>
 
@@ -43,6 +43,7 @@ th{background:#1f2937;color:#fff;}
 <div class="container">
 
 <div class="card">
+<button class="btn-danger" onclick="logout()">Sair</button>
 <h3>Lançamento</h3>
 
 <select id="modoVeiculo" onchange="alternarModoVeiculo()">
@@ -62,19 +63,8 @@ th{background:#1f2937;color:#fff;}
 </div>
 
 <br>
-
 <input type="date" id="dataInicio">
 <input type="date" id="dataFim">
-
-<select id="mes">
-<option>Janeiro</option><option>Fevereiro</option>
-<option>Março</option><option>Abril</option>
-<option>Maio</option><option>Junho</option>
-<option>Julho</option><option>Agosto</option>
-<option>Setembro</option><option>Outubro</option>
-<option>Novembro</option><option>Dezembro</option>
-</select>
-
 <br>
 
 <input id="cliente" placeholder="Cliente">
@@ -85,13 +75,14 @@ th{background:#1f2937;color:#fff;}
 <input id="kmFinal" type="number" placeholder="KM Final">
 
 <button class="btn-success" onclick="lancar()">Salvar</button>
-<button class="btn-primary" onclick="gerarPDF()">PDF</button>
 <button class="btn-primary" onclick="gerarGrafico()">Dashboard</button>
+<button class="btn-primary" onclick="gerarPDF()">PDF</button>
 
 </div>
 
 <div class="card">
-<h3>Filtro por Período</h3>
+<h3>Relatório</h3>
+
 <input type="date" id="filtroInicio">
 <input type="date" id="filtroFim">
 <button onclick="filtrarPeriodo()">Filtrar</button>
@@ -99,16 +90,16 @@ th{background:#1f2937;color:#fff;}
 <table>
 <thead>
 <tr>
-<th>Veículo</th><th>Cliente</th>
-<th>KM Rodado</th><th>Lucro</th>
+<th>Veículo</th>
+<th>Cliente</th>
+<th>KM Rodado</th>
+<th>Lucro</th>
 </tr>
 </thead>
 <tbody id="tabela"></tbody>
 </table>
 
-<div class="total-box">
-<div>Total: R$ <span id="totalGeral">0.00</span></div>
-</div>
+<h3>Total: R$ <span id="totalGeral">0.00</span></h3>
 
 <canvas id="grafico"></canvas>
 
@@ -123,14 +114,40 @@ const supabase = window.supabase.createClient(
 "sb_publishable_IyvZNwtgkvECR0QVlYbhzw_zPL1TMJv"
 );
 
+let usuarioAtual;
+
 async function login(){
-const { error } = await supabase.auth.signInWithPassword({
-email: email.value, password: senha.value
+const { data, error } = await supabase.auth.signInWithPassword({
+email: email.value,
+password: senha.value
 });
-if(error){ alert("Erro login"); return; }
+if(error){ alert(error.message); return; }
+
+usuarioAtual = data.user;
 loginBox.style.display="none";
 sistema.style.display="block";
 carregarVeiculos();
+}
+
+async function cadastrar(){
+const { error } = await supabase.auth.signUp({
+email: email.value,
+password: senha.value
+});
+if(error){ alert(error.message); return; }
+alert("Conta criada! Faça login.");
+}
+
+async function logout(){
+await supabase.auth.signOut();
+location.reload();
+}
+
+function alternarModoVeiculo(){
+veiculoExistente.style.display =
+modoVeiculo.value==="existente"?"block":"none";
+veiculoNovo.style.display =
+modoVeiculo.value==="novo"?"block":"none";
 }
 
 async function carregarVeiculos(){
@@ -141,15 +158,10 @@ selectVeiculo.innerHTML+=`<option value="${v.id}">${v.nome}</option>`;
 });
 }
 
-function alternarModoVeiculo(){
-veiculoExistente.style.display =
-modoVeiculo.value==="existente"?"block":"none";
-veiculoNovo.style.display =
-modoVeiculo.value==="novo"?"block":"none";
-}
-
 async function removerVeiculo(){
-await supabase.from("veiculos").delete().eq("id",selectVeiculo.value);
+await supabase.from("veiculos")
+.delete()
+.eq("id",selectVeiculo.value);
 carregarVeiculos();
 }
 
@@ -177,11 +189,14 @@ async function lancar(){
 let veiculo_id;
 
 if(modoVeiculo.value==="novo"){
-const { data } = await supabase.from("veiculos").insert([{
+const { data } = await supabase.from("veiculos")
+.insert([{
 nome:novoNome.value,
 placa:novaPlaca.value,
-km_inicial:novoKmInicial.value
+km_inicial:novoKmInicial.value,
+user_id:usuarioAtual.id
 }]).select();
+
 veiculo_id=data[0].id;
 carregarVeiculos();
 }else{
@@ -201,7 +216,7 @@ km_inicial:kmInicialAtual,
 km_final:kmFinal.value,
 data_inicio:dataInicio.value,
 data_fim:dataFim.value,
-mes:mes.value
+user_id:usuarioAtual.id
 }]);
 
 alert("Salvo!");
@@ -219,7 +234,6 @@ montarTabela(data);
 }
 
 function montarTabela(data){
-
 tabela.innerHTML="";
 let total=0;
 
@@ -241,13 +255,11 @@ totalGeral.innerText=total.toFixed(2);
 }
 
 async function gerarGrafico(){
-
 const { data } = await supabase
 .from("lancamentos")
 .select(`valor,despesa,veiculos(nome)`);
 
 let resumo={};
-
 data.forEach(i=>{
 let lucro=i.valor-i.despesa;
 let nome=i.veiculos.nome;
@@ -276,7 +288,7 @@ const { data } = await supabase
 let y=20;
 let total=0;
 
-doc.text("RELATÓRIO EMPRESARIAL FROTA",20,10);
+doc.text("RELATÓRIO FROTA",20,10);
 
 data.forEach(i=>{
 let lucro=i.valor-i.despesa;
@@ -291,6 +303,5 @@ doc.save("Relatorio_Frota.pdf");
 }
 
 </script>
-
 </body>
 </html>
