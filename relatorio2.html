@@ -43,27 +43,6 @@ th{background:#1f2937;color:#fff;}
 <div class="card">
 <button class="btn-danger" onclick="logout()">Sair</button>
 <h3>Lançamento</h3>
-
-<select id="selectVeiculo"></select>
-<button class="btn-danger" onclick="removerVeiculo()">Remover</button>
-
-<br>
-
-<input type="date" id="dataInicio">
-<input type="date" id="dataFim">
-
-<br>
-
-<input id="cliente" placeholder="Cliente">
-<input id="descricao" placeholder="Descrição">
-<input id="quantidade" type="number" placeholder="Qtd">
-<input id="valor" type="number" placeholder="Valor">
-<input id="despesa" type="number" placeholder="Despesa">
-<input id="kmFinal" type="number" placeholder="KM Final">
-
-<button class="btn-success" onclick="lancar()">Salvar</button>
-<button class="btn-primary" onclick="gerarGrafico()">Dashboard</button>
-<button class="btn-primary" onclick="gerarPDF()">PDF</button>
 </div>
 
 <div id="areaAdmin" class="card" style="display:none;">
@@ -78,33 +57,9 @@ th{background:#1f2937;color:#fff;}
 <option value="dono_frota">Dono da Frota</option>
 </select>
 
-<button onclick="cadastrarUsuario()">Cadastrar</button>
+<button class="btn-success" onclick="cadastrarUsuario()">Cadastrar</button>
 </div>
 
-<div class="card">
-<h3>Relatório</h3>
-
-<input type="date" id="filtroInicio">
-<input type="date" id="filtroFim">
-<button onclick="filtrarPeriodo()">Filtrar</button>
-
-<table>
-<thead>
-<tr>
-<th>Veículo</th>
-<th>Cliente</th>
-<th>KM Rodado</th>
-<th>Lucro</th>
-</tr>
-</thead>
-<tbody id="tabela"></tbody>
-</table>
-
-<h3>Total: R$ <span id="totalGeral">0.00</span></h3>
-
-<canvas id="grafico"></canvas>
-
-</div>
 </div>
 </div>
 
@@ -120,6 +75,7 @@ const supabaseClient = createClient(
 let usuarioAtual;
 let perfilAtual;
 
+/* ================= LOGIN ================= */
 window.login = async function(){
 
   const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -127,15 +83,23 @@ window.login = async function(){
     password: document.getElementById("senha").value
   });
 
-  if(error){ alert(error.message); return; }
+  if(error){
+    alert(error.message);
+    return;
+  }
 
   usuarioAtual = data.user;
 
-  const { data: perfil } = await supabaseClient
+  const { data: perfil, error: perfilError } = await supabaseClient
     .from("profiles")
     .select("*")
     .eq("id", usuarioAtual.id)
     .single();
+
+  if(perfilError || !perfil){
+    alert("Perfil não encontrado.");
+    return;
+  }
 
   perfilAtual = perfil;
 
@@ -145,7 +109,53 @@ window.login = async function(){
 
   document.getElementById("loginBox").style.display="none";
   document.getElementById("sistema").style.display="block";
+}
 
+/* ================= LOGOUT ================= */
+window.logout = async function(){
+  await supabaseClient.auth.signOut();
+  location.reload();
+}
+
+/* ================= CADASTRAR USUARIO ================= */
+window.cadastrarUsuario = async function(){
+
+  const email = document.getElementById("cadEmail").value;
+  const senha = document.getElementById("cadSenha").value;
+  const nome = document.getElementById("cadNome").value;
+  const role = document.getElementById("cadRole").value;
+
+  if(!email || !senha || !nome){
+    alert("Preencha todos os campos");
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: email,
+    password: senha
+  });
+
+  if(error){
+    alert("Erro ao criar usuário: " + error.message);
+    return;
+  }
+
+  const userId = data.user.id;
+
+  const { error: perfilError } = await supabaseClient
+    .from("profiles")
+    .insert({
+      id: userId,
+      nome: nome,
+      role: role
+    });
+
+  if(perfilError){
+    alert("Erro ao salvar perfil: " + perfilError.message);
+    return;
+  }
+
+  alert("Usuário cadastrado com sucesso!");
 }
 
 </script>
