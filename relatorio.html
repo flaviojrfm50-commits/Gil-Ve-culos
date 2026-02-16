@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>ERP Frota SaaS</title>
+<title>ERP Frota Multiusuário</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -111,6 +111,10 @@ th{background:#1f2937;color:#fff;}
 
 <script>
 
+// ————————————————————————————————
+// ❗ DECLARAÇÃO DO SUPABASE (UMA ÚNICA VEZ)
+// ————————————————————————————————
+
 const supabase = window.supabase.createClient(
   "https://bzgvbghxmebdjqnlakbj.supabase.co",
   "sb_publishable_IyvZNwtgkvECR0QVlYbhzw_zPL1TMJv"
@@ -119,212 +123,243 @@ const supabase = window.supabase.createClient(
 let usuarioAtual;
 let perfilAtual;
 
-// LOGIN
+// ————————————————————————————————
+// 🔐 LOGIN
+// ————————————————————————————————
+
 async function login(){
 
-const { data, error } = await supabase.auth.signInWithPassword({
-email: email.value,
-password: senha.value
-});
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.value,
+    password: senha.value
+  });
 
-if(error){ alert(error.message); return; }
+  if(error){ alert(error.message); return; }
 
-usuarioAtual = data.user;
+  usuarioAtual = data.user;
 
-// Buscar perfil
-const { data: perfil } = await supabase
-.from("profiles")
-.select("*")
-.eq("id", usuarioAtual.id)
-.single();
+  const { data: perfil } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", usuarioAtual.id)
+    .single();
 
-perfilAtual = perfil;
+  perfilAtual = perfil;
 
-if(perfil.role === "super_admin" || perfil.role === "dono_frota"){
-areaAdmin.style.display="block";
+  if(perfil.role === "super_admin" || perfil.role === "dono_frota"){
+    areaAdmin.style.display="block";
+  }
+
+  loginBox.style.display="none";
+  sistema.style.display="block";
+
+  carregarVeiculos();
+
 }
 
-loginBox.style.display="none";
-sistema.style.display="block";
+// ————————————————————————————————
+// 🔐 LOGOUT
+// ————————————————————————————————
 
-carregarVeiculos();
-}
-
-// LOGOUT
 async function logout(){
-await supabase.auth.signOut();
-location.reload();
+  await supabase.auth.signOut();
+  location.reload();
 }
 
-// CARREGAR VEÍCULOS
+// ————————————————————————————————
+// 🚗 CARREGAR VEÍCULOS
+// ————————————————————————————————
+
 async function carregarVeiculos(){
-const { data } = await supabase.from("veiculos").select("*");
-selectVeiculo.innerHTML="";
-data.forEach(v=>{
-selectVeiculo.innerHTML+=`<option value="${v.id}">${v.nome}</option>`;
-});
+  const { data } = await supabase.from("veiculos").select("*");
+  selectVeiculo.innerHTML="";
+  data.forEach(v=>{
+    selectVeiculo.innerHTML+=`<option value="${v.id}">${v.nome}</option>`;
+  });
 }
 
-// REMOVER VEÍCULO
+// ————————————————————————————————
+// 🗑 REMOVER VEÍCULO
+// ————————————————————————————————
+
 async function removerVeiculo(){
-await supabase.from("veiculos")
-.delete()
-.eq("id",selectVeiculo.value);
-carregarVeiculos();
+  await supabase.from("veiculos")
+    .delete()
+    .eq("id",selectVeiculo.value);
+
+  carregarVeiculos();
 }
 
-// BUSCAR ÚLTIMO KM
+// ————————————————————————————————
+// 📍 BUSCAR ÚLTIMO KM
+// ————————————————————————————————
+
 async function buscarUltimoKM(id){
-const { data } = await supabase
-.from("lancamentos")
-.select("km_final")
-.eq("veiculo_id",id)
-.order("created_at",{ascending:false})
-.limit(1);
+  const { data } = await supabase
+    .from("lancamentos")
+    .select("km_final")
+    .eq("veiculo_id",id)
+    .order("created_at",{ascending:false})
+    .limit(1);
 
-if(data.length>0) return data[0].km_final;
+  if(data.length>0) return data[0].km_final;
 
-const { data: v } = await supabase
-.from("veiculos")
-.select("km_inicial")
-.eq("id",id)
-.single();
+  const { data: v } = await supabase
+    .from("veiculos")
+    .select("km_inicial")
+    .eq("id",id)
+    .single();
 
-return v.km_inicial;
+  return v.km_inicial;
 }
 
-// SALVAR LANÇAMENTO
+// ————————————————————————————————
+// 💾 SALVAR LANÇAMENTO
+// ————————————————————————————————
+
 async function lancar(){
 
-let veiculo_id=selectVeiculo.value;
-let kmInicialAtual = await buscarUltimoKM(veiculo_id);
+  let veiculo_id = selectVeiculo.value;
+  let kmInicialAtual = await buscarUltimoKM(veiculo_id);
 
-await supabase.from("lancamentos").insert([{
-veiculo_id,
-cliente:cliente.value,
-descricao:descricao.value,
-quantidade:quantidade.value,
-valor:valor.value,
-despesa:despesa.value,
-km_inicial:kmInicialAtual,
-km_final:kmFinal.value,
-data_inicio:dataInicio.value,
-data_fim:dataFim.value,
-user_id:usuarioAtual.id
-}]);
+  await supabase.from("lancamentos").insert([{
+    veiculo_id,
+    cliente:cliente.value,
+    descricao:descricao.value,
+    quantidade:quantidade.value,
+    valor:valor.value,
+    despesa:despesa.value,
+    km_inicial:kmInicialAtual,
+    km_final:kmFinal.value,
+    data_inicio:dataInicio.value,
+    data_fim:dataFim.value,
+    user_id:usuarioAtual.id
+  }]);
 
-alert("Salvo!");
+  alert("Salvo!");
 }
 
-// FILTRO
+// ————————————————————————————————
+// 📊 FILTRO POR PERÍODO
+// ————————————————————————————————
+
 async function filtrarPeriodo(){
 
-const { data } = await supabase
-.from("lancamentos")
-.select(`*,veiculos(nome)`)
-.gte("data_inicio",filtroInicio.value)
-.lte("data_fim",filtroFim.value);
+  const { data } = await supabase
+    .from("lancamentos")
+    .select(`*,veiculos(nome)`)
+    .gte("data_inicio",filtroInicio.value)
+    .lte("data_fim",filtroFim.value);
 
-montarTabela(data);
+  montarTabela(data);
 }
 
 function montarTabela(data){
-tabela.innerHTML="";
-let total=0;
+  tabela.innerHTML="";
+  let total=0;
 
-data.forEach(item=>{
-let km=item.km_final-item.km_inicial;
-let lucro=item.valor-item.despesa;
-total+=lucro;
+  data.forEach(item=>{
+    let km=item.km_final-item.km_inicial;
+    let lucro=item.valor-item.despesa;
+    total+=lucro;
 
-tabela.innerHTML+=`
-<tr>
-<td>${item.veiculos.nome}</td>
-<td>${item.cliente}</td>
-<td>${km}</td>
-<td>R$ ${lucro}</td>
-</tr>`;
-});
+    tabela.innerHTML+=`
+    <tr>
+    <td>${item.veiculos.nome}</td>
+    <td>${item.cliente}</td>
+    <td>${km}</td>
+    <td>R$ ${lucro}</td>
+    </tr>`;
+  });
 
-totalGeral.innerText=total.toFixed(2);
+  totalGeral.innerText=total.toFixed(2);
 }
 
-// DASHBOARD
+// ————————————————————————————————
+// 📈 DASHBOARD
+// ————————————————————————————————
+
 async function gerarGrafico(){
 
-const { data } = await supabase
-.from("lancamentos")
-.select(`valor,despesa,veiculos(nome)`);
+  const { data } = await supabase
+    .from("lancamentos")
+    .select(`valor,despesa,veiculos(nome)`);
 
-let resumo={};
-data.forEach(i=>{
-let lucro=i.valor-i.despesa;
-let nome=i.veiculos.nome;
-if(!resumo[nome]) resumo[nome]=0;
-resumo[nome]+=lucro;
-});
+  let resumo={};
+  data.forEach(i=>{
+    let lucro=i.valor-i.despesa;
+    let nome=i.veiculos.nome;
+    if(!resumo[nome]) resumo[nome]=0;
+    resumo[nome]+=lucro;
+  });
 
-new Chart(document.getElementById("grafico"),{
-type:"bar",
-data:{
-labels:Object.keys(resumo),
-datasets:[{label:"Lucro",data:Object.values(resumo)}]
+  new Chart(document.getElementById("grafico"),{
+    type:"bar",
+    data:{
+      labels:Object.keys(resumo),
+      datasets:[{label:"Lucro",data:Object.values(resumo)}]
+    }
+  });
 }
-});
-}
 
-// PDF
+// ————————————————————————————————
+// 📄 PDF
+// ————————————————————————————————
+
 async function gerarPDF(){
 
-const { jsPDF } = window.jspdf;
-const doc=new jsPDF();
+  const { jsPDF } = window.jspdf;
+  const doc=new jsPDF();
 
-const { data } = await supabase
-.from("lancamentos")
-.select(`*,veiculos(nome)`);
+  const { data } = await supabase
+    .from("lancamentos")
+    .select(`*,veiculos(nome)`);
 
-let y=20;
-let total=0;
+  let y=20;
+  let total=0;
 
-doc.text("RELATÓRIO FROTA",20,10);
+  doc.text("RELATÓRIO FROTA",20,10);
 
-data.forEach(i=>{
-let lucro=i.valor-i.despesa;
-total+=lucro;
-doc.text(`${i.veiculos.nome} - ${i.cliente} - R$ ${lucro}`,10,y);
-y+=7;
-if(y>270){doc.addPage();y=20;}
-});
+  data.forEach(i=>{
+    let lucro=i.valor-i.despesa;
+    total+=lucro;
+    doc.text(`${i.veiculos.nome} - ${i.cliente} - R$ ${lucro}`,10,y);
+    y+=7;
+    if(y>270){doc.addPage();y=20;}
+  });
 
-doc.text(`TOTAL: R$ ${total.toFixed(2)}`,10,y+10);
-doc.save("Relatorio_Frota.pdf");
+  doc.text(`TOTAL: R$ ${total.toFixed(2)}`,10,y+10);
+  doc.save("Relatorio_Frota.pdf");
 }
 
-// CADASTRAR USUÁRIO (ADMIN)
+// ————————————————————————————————
+// 👤 CADASTRAR USUÁRIO (ADMIN)
+// ————————————————————————————————
+
 async function cadastrarUsuario(){
 
-if(perfilAtual.role !== "super_admin" &&
-perfilAtual.role !== "dono_frota"){
-alert("Sem permissão");
-return;
-}
+  if(perfilAtual.role !== "super_admin" &&
+     perfilAtual.role !== "dono_frota"){
+    alert("Sem permissão");
+    return;
+  }
 
-const { data: novoAuth, error } = await supabase.auth.signUp({
-email: cadEmail.value,
-password: cadSenha.value
-});
+  const { data: novoAuth, error } = await supabase.auth.signUp({
+    email: cadEmail.value,
+    password: cadSenha.value
+  });
 
-if(error){ alert(error.message); return; }
+  if(error){ alert(error.message); return; }
 
-await supabase.from("profiles").insert([{
-id: novoAuth.user.id,
-empresa_id: perfilAtual.empresa_id,
-nome: cadNome.value,
-role: cadRole.value,
-ativo: true
-}]);
+  await supabase.from("profiles").insert([{
+    id: novoAuth.user.id,
+    empresa_id: perfilAtual.empresa_id,
+    nome: cadNome.value,
+    role: cadRole.value,
+    ativo: true
+  }]);
 
-alert("Usuário cadastrado!");
+  alert("Usuário cadastrado!");
 }
 
 </script>
