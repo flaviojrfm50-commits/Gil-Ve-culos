@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>ERP Frota Multiusuário</title>
+<title>ERP Frota SaaS</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -27,7 +27,7 @@ th{background:#1f2937;color:#fff;}
 </head>
 <body>
 
-<header>ERP FROTA MULTIUSUÁRIO</header>
+<header>ERP FROTA SAAS</header>
 
 <div id="loginBox" class="container">
 <div class="card">
@@ -35,7 +35,6 @@ th{background:#1f2937;color:#fff;}
 <input id="email" placeholder="Email">
 <input id="senha" type="password" placeholder="Senha">
 <button class="btn-primary" onclick="login()">Entrar</button>
-<button onclick="cadastrar()">Criar Conta</button>
 </div>
 </div>
 
@@ -46,25 +45,14 @@ th{background:#1f2937;color:#fff;}
 <button class="btn-danger" onclick="logout()">Sair</button>
 <h3>Lançamento</h3>
 
-<select id="modoVeiculo" onchange="alternarModoVeiculo()">
-<option value="existente">Selecionar Existente</option>
-<option value="novo">Cadastrar Novo</option>
-</select>
-
-<div id="veiculoExistente">
 <select id="selectVeiculo"></select>
 <button class="btn-danger" onclick="removerVeiculo()">Remover</button>
-</div>
-
-<div id="veiculoNovo" style="display:none;">
-<input id="novoNome" placeholder="Nome">
-<input id="novaPlaca" placeholder="Placa">
-<input id="novoKmInicial" type="number" placeholder="KM Inicial">
-</div>
 
 <br>
+
 <input type="date" id="dataInicio">
 <input type="date" id="dataFim">
+
 <br>
 
 <input id="cliente" placeholder="Cliente">
@@ -77,7 +65,21 @@ th{background:#1f2937;color:#fff;}
 <button class="btn-success" onclick="lancar()">Salvar</button>
 <button class="btn-primary" onclick="gerarGrafico()">Dashboard</button>
 <button class="btn-primary" onclick="gerarPDF()">PDF</button>
+</div>
 
+<div id="areaAdmin" class="card" style="display:none;">
+<h3>Cadastrar Usuário</h3>
+
+<input id="cadEmail" placeholder="Email">
+<input id="cadSenha" type="password" placeholder="Senha">
+<input id="cadNome" placeholder="Nome">
+
+<select id="cadRole">
+<option value="motorista">Motorista</option>
+<option value="dono_frota">Dono da Frota</option>
+</select>
+
+<button onclick="cadastrarUsuario()">Cadastrar</button>
 </div>
 
 <div class="card">
@@ -115,41 +117,46 @@ const supabase = window.supabase.createClient(
 );
 
 let usuarioAtual;
+let perfilAtual;
 
+// LOGIN
 async function login(){
+
 const { data, error } = await supabase.auth.signInWithPassword({
 email: email.value,
 password: senha.value
 });
+
 if(error){ alert(error.message); return; }
 
 usuarioAtual = data.user;
+
+// Buscar perfil
+const { data: perfil } = await supabase
+.from("profiles")
+.select("*")
+.eq("id", usuarioAtual.id)
+.single();
+
+perfilAtual = perfil;
+
+if(perfil.role === "super_admin" || perfil.role === "dono_frota"){
+areaAdmin.style.display="block";
+}
+
 loginBox.style.display="none";
 sistema.style.display="block";
+
 carregarVeiculos();
 }
 
-async function cadastrar(){
-const { error } = await supabase.auth.signUp({
-email: email.value,
-password: senha.value
-});
-if(error){ alert(error.message); return; }
-alert("Conta criada! Faça login.");
-}
-
+// LOGOUT
 async function logout(){
 await supabase.auth.signOut();
 location.reload();
 }
 
-function alternarModoVeiculo(){
-veiculoExistente.style.display =
-modoVeiculo.value==="existente"?"block":"none";
-veiculoNovo.style.display =
-modoVeiculo.value==="novo"?"block":"none";
-}
-
+// CARREGAR VEÍCULOS
 async function carregarVeiculos(){
 const { data } = await supabase.from("veiculos").select("*");
 selectVeiculo.innerHTML="";
@@ -158,6 +165,7 @@ selectVeiculo.innerHTML+=`<option value="${v.id}">${v.nome}</option>`;
 });
 }
 
+// REMOVER VEÍCULO
 async function removerVeiculo(){
 await supabase.from("veiculos")
 .delete()
@@ -165,6 +173,7 @@ await supabase.from("veiculos")
 carregarVeiculos();
 }
 
+// BUSCAR ÚLTIMO KM
 async function buscarUltimoKM(id){
 const { data } = await supabase
 .from("lancamentos")
@@ -184,25 +193,10 @@ const { data: v } = await supabase
 return v.km_inicial;
 }
 
+// SALVAR LANÇAMENTO
 async function lancar(){
 
-let veiculo_id;
-
-if(modoVeiculo.value==="novo"){
-const { data } = await supabase.from("veiculos")
-.insert([{
-nome:novoNome.value,
-placa:novaPlaca.value,
-km_inicial:novoKmInicial.value,
-user_id:usuarioAtual.id
-}]).select();
-
-veiculo_id=data[0].id;
-carregarVeiculos();
-}else{
-veiculo_id=selectVeiculo.value;
-}
-
+let veiculo_id=selectVeiculo.value;
 let kmInicialAtual = await buscarUltimoKM(veiculo_id);
 
 await supabase.from("lancamentos").insert([{
@@ -222,6 +216,7 @@ user_id:usuarioAtual.id
 alert("Salvo!");
 }
 
+// FILTRO
 async function filtrarPeriodo(){
 
 const { data } = await supabase
@@ -254,7 +249,9 @@ tabela.innerHTML+=`
 totalGeral.innerText=total.toFixed(2);
 }
 
+// DASHBOARD
 async function gerarGrafico(){
+
 const { data } = await supabase
 .from("lancamentos")
 .select(`valor,despesa,veiculos(nome)`);
@@ -276,6 +273,7 @@ datasets:[{label:"Lucro",data:Object.values(resumo)}]
 });
 }
 
+// PDF
 async function gerarPDF(){
 
 const { jsPDF } = window.jspdf;
@@ -300,6 +298,33 @@ if(y>270){doc.addPage();y=20;}
 
 doc.text(`TOTAL: R$ ${total.toFixed(2)}`,10,y+10);
 doc.save("Relatorio_Frota.pdf");
+}
+
+// CADASTRAR USUÁRIO (ADMIN)
+async function cadastrarUsuario(){
+
+if(perfilAtual.role !== "super_admin" &&
+perfilAtual.role !== "dono_frota"){
+alert("Sem permissão");
+return;
+}
+
+const { data: novoAuth, error } = await supabase.auth.signUp({
+email: cadEmail.value,
+password: cadSenha.value
+});
+
+if(error){ alert(error.message); return; }
+
+await supabase.from("profiles").insert([{
+id: novoAuth.user.id,
+empresa_id: perfilAtual.empresa_id,
+nome: cadNome.value,
+role: cadRole.value,
+ativo: true
+}]);
+
+alert("Usuário cadastrado!");
 }
 
 </script>
