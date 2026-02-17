@@ -35,20 +35,13 @@ function converterRealParaNumero(valorDigitado){
 /* ================= FORMATAÇÃO AUTOMÁTICA MOEDA ================= */
 
 function formatarMoeda(input){
-
   input.addEventListener("input", function(e){
-
     let valor = e.target.value.replace(/\D/g,"");
-
     valor = (Number(valor) / 100).toFixed(2);
-
     valor = valor.replace(".",",");
-
     valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g,".");
-
     e.target.value = valor;
   });
-
 }
 
 /* ================= LOGIN ================= */
@@ -198,9 +191,9 @@ async function carregarLancamentos(){
       <td>${km}</td>
       <td>${l.cliente||''}</td>
       <td>${l.descricao||''}</td>
-      <td>R$ ${Number(l.valor||0).toFixed(2)}</td>
-      <td>R$ ${Number(l.despesa||0).toFixed(2)}</td>
-      <td><b>R$ ${lucro.toFixed(2)}</b></td>
+      <td>R$ ${Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td>R$ ${Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td><b>R$ ${lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})}</b></td>
       <td>
         <button onclick="excluirLancamento('${l.id}')" 
         style="background:#dc3545">X</button>
@@ -209,7 +202,7 @@ async function carregarLancamentos(){
     `;
   });
 
-  totalSpan.innerText = total.toFixed(2);
+  totalSpan.innerText = total.toLocaleString('pt-BR',{minimumFractionDigits:2});
 }
 
 window.excluirLancamento = async function(id){
@@ -220,7 +213,7 @@ window.excluirLancamento = async function(id){
   carregarLancamentos();
 }
 
-/* ================= PDF AJUSTADO PADRÃO BRASIL ================= */
+/* ================= PDF ================= */
 
 window.gerarPDF = function(){
 
@@ -360,7 +353,7 @@ th{background:#222;color:#fff}
 <tbody id="tabela"></tbody>
 </table>
 
-<h3>Total Lucro: R$ <span id="totalSpan">0.00</span></h3>
+<h3>Total Lucro: R$ <span id="totalSpan">0,00</span></h3>
 
 </div>
 
