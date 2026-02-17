@@ -151,10 +151,19 @@ window.cadastrarLancamento = async function(){
 
 async function carregarLancamentos(){
 
-  const { data } = await supabase
+  const veiculoSelecionado = selectVeiculo.value;
+
+  let query = supabase
     .from("lancamentos")
     .select("*, veiculos(modelo,placa)")
     .order("created_at",{ascending:false});
+
+  // 🔥 FILTRO AQUI
+  if(veiculoSelecionado){
+    query = query.eq("veiculo_id", veiculoSelecionado);
+  }
+
+  const { data } = await query;
 
   dadosAtuais = data || [];
   tabela.innerHTML="";
@@ -188,9 +197,11 @@ async function carregarLancamentos(){
   });
 
   totalSpan.innerText = total.toLocaleString('pt-BR',{minimumFractionDigits:2});
-atualizarFiltroMes();
+  atualizarFiltroMes();
 }
 
+
+ 
 
 window.excluirLancamento = async function(id){
   if(!confirm("Excluir este lançamento?")) return;
@@ -347,11 +358,6 @@ function limpar(){
   document.querySelectorAll("#sistema input").forEach(i=>i.value="");
 }
 
-window.addEventListener("DOMContentLoaded", ()=>{
-  formatarMoeda(document.getElementById("valor"));
-  formatarMoeda(document.getElementById("despesa"));
-});
-
 /* ================= FILTRO MÊS ================= */
 
 function atualizarFiltroMes(){
@@ -363,6 +369,19 @@ function atualizarFiltroMes(){
     mesFiltro.innerHTML += `<option value="${m}">${m}</option>`;
   });
 }
+
+window.addEventListener("DOMContentLoaded", ()=>{
+
+  formatarMoeda(document.getElementById("valor"));
+  formatarMoeda(document.getElementById("despesa"));
+
+  document.getElementById("selectVeiculo")
+    .addEventListener("change", carregarLancamentos);
+
+});
+
+
+
 
 window.gerarPDFMes = function(){
 
