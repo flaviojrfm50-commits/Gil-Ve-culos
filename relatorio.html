@@ -9,7 +9,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
 <script type="module">
-/* ======= SEU SCRIPT ORIGINAL INTACTO ======= */
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const { jsPDF } = window.jspdf;
@@ -21,15 +20,21 @@ const supabase = createClient(
 
 let dadosAtuais = [];
 
-/* ================= CONVERTER REAL ================= */
+/* ================= CONVERTER REAL PARA NÚMERO ================= */
+
 function converterRealParaNumero(valorDigitado){
   if(!valorDigitado) return 0;
-  return Number(valorDigitado.replace(/\./g,'').replace(',','.')) || 0;
+
+  return Number(
+    valorDigitado
+      .replace(/\./g,'')
+      .replace(',','.')
+  ) || 0;
 }
 
-/* ================= FORMATAR MOEDA ================= */
+/* ================= FORMATAÇÃO AUTOMÁTICA MOEDA ================= */
+
 function formatarMoeda(input){
-  if(!input) return;
   input.addEventListener("input", function(e){
     let valor = e.target.value.replace(/\D/g,"");
     valor = (Number(valor) / 100).toFixed(2);
@@ -40,10 +45,9 @@ function formatarMoeda(input){
 }
 
 /* ================= LOGIN ================= */
+
 async function verificarSessao(){
   const { data: { session } } = await supabase.auth.getSession();
-  const loginBox = document.getElementById("loginBox");
-  const sistema = document.getElementById("sistema");
 
   if(session){
     loginBox.style.display="none";
@@ -61,6 +65,7 @@ window.login = async function(){
     email: email.value,
     password: senha.value
   });
+
   if(error) return alert(error.message);
   verificarSessao();
 }
@@ -70,6 +75,7 @@ window.cadastrarConta = async function(){
     email: email.value,
     password: senha.value
   });
+
   if(error) return alert(error.message);
   alert("Conta criada!");
 }
@@ -79,8 +85,201 @@ window.logout = async function(){
   verificarSessao();
 }
 
-/* ================= RESTANTE DO SEU SCRIPT PERMANECE IGUAL ================= */
-/* (mantido exatamente como você enviou, sem alteração) */
+/* ================= VEICULOS ================= */
+
+window.cadastrarVeiculo = async function(){
+
+  if(!placa.value || !modelo.value)
+    return alert("Preencha placa e modelo");
+
+  const { error } = await supabase.from("veiculos").insert({
+    placa: placa.value.toUpperCase(),
+    modelo: modelo.value
+  });
+
+  if(error) return alert(error.message);
+
+  placa.value="";
+  modelo.value="";
+  carregarVeiculos();
+}
+
+async function carregarVeiculos(){
+
+  const { data } = await supabase.from("veiculos").select("*");
+
+  selectVeiculo.innerHTML="<option value=''>Selecione</option>";
+
+  data?.forEach(v=>{
+    selectVeiculo.innerHTML += `
+      <option value="${v.id}">
+        ${v.modelo} - ${v.placa}
+      </option>
+    `;
+  });
+}
+
+window.excluirVeiculo = async function(){
+
+  const id = selectVeiculo.value;
+  if(!id) return alert("Selecione um veículo");
+
+  if(!confirm("Excluir veículo e todos lançamentos?")) return;
+
+  await supabase.from("lancamentos").delete().eq("veiculo_id", id);
+  await supabase.from("veiculos").delete().eq("id", id);
+
+  carregarVeiculos();
+  carregarLancamentos();
+}
+
+/* ================= LANÇAMENTOS ================= */
+
+window.cadastrarLancamento = async function(){
+
+  if(!selectVeiculo.value || !dataInicio.value)
+    return alert("Selecione veículo e data");
+
+  const mes = new Date(dataInicio.value)
+    .toLocaleString('pt-BR', { month:'long' });
+
+  const { error } = await supabase.from("lancamentos").insert({
+    veiculo_id: selectVeiculo.value,
+    cliente: cliente.value,
+    descricao: descricao.value,
+    km_inicial: Number(kmInicial.value)||0,
+    km_final: Number(kmFinal.value)||0,
+    quantidade: Number(quantidade.value)||0,
+    valor: converterRealParaNumero(valor.value),
+    despesa: converterRealParaNumero(despesa.value),
+    data_inicio: dataInicio.value,
+    data_fim: dataFim.value,
+    mes
+  });
+
+  if(error) return alert(error.message);
+
+  limpar();
+  carregarLancamentos();
+}
+
+async function carregarLancamentos(){
+
+  const { data } = await supabase
+    .from("lancamentos")
+    .select("*, veiculos(modelo,placa)")
+    .order("created_at",{ascending:false});
+
+  dadosAtuais = data || [];
+
+  tabela.innerHTML="";
+  let total = 0;
+
+  dadosAtuais.forEach(l=>{
+
+    const km = (l.km_final||0)-(l.km_inicial||0);
+    const lucro = (l.valor||0)-(l.despesa||0);
+    total += lucro;
+
+    tabela.innerHTML += `
+    <tr>
+      <td>${l.veiculos?.modelo||''}</td>
+      <td>${l.veiculos?.placa||''}</td>
+      <td>${l.mes||''}</td>
+      <td>${l.km_inicial||0}</td>
+      <td>${l.km_final||0}</td>
+      <td>${km}</td>
+      <td>${l.cliente||''}</td>
+      <td>${l.descricao||''}</td>
+      <td>R$ ${Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td>R$ ${Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td><b>R$ ${lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})}</b></td>
+      <td>
+        <button onclick="excluirLancamento('${l.id}')" 
+        style="background:#dc3545">X</button>
+      </td>
+    </tr>
+    `;
+  });
+
+  totalSpan.innerText = total.toLocaleString('pt-BR',{minimumFractionDigits:2});
+}
+
+window.excluirLancamento = async function(id){
+
+  if(!confirm("Excluir este lançamento?")) return;
+
+  await supabase.from("lancamentos").delete().eq("id", id);
+  carregarLancamentos();
+}
+
+/* ================= PDF ================= */
+
+window.gerarPDF = function(){
+
+  const doc = new jsPDF();
+
+  const colunas = [
+    "Modelo","Placa","Mês","KM Inicial",
+    "KM Final","KM Rodado","Cliente",
+    "Descrição","Valor","Despesa","Lucro"
+  ];
+
+  let linhas = [];
+  let total = 0;
+
+  dadosAtuais.forEach(l=>{
+
+    const km = (l.km_final||0)-(l.km_inicial||0);
+    const lucro = (l.valor||0)-(l.despesa||0);
+    total += lucro;
+
+    linhas.push([
+      l.veiculos?.modelo||'',
+      l.veiculos?.placa||'',
+      l.mes||'',
+      l.km_inicial||0,
+      l.km_final||0,
+      km,
+      l.cliente||'',
+      l.descricao||'',
+      "R$ "+Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})
+    ]);
+  });
+
+  doc.text("RELATÓRIO CONTROLE FROTA",14,15);
+
+  doc.autoTable({
+    head:[colunas],
+    body:linhas,
+    startY:20,
+    styles:{fontSize:8},
+    headStyles:{fillColor:[34,34,34]}
+  });
+
+  doc.text(
+    "TOTAL LUCRO: R$ "+total.toLocaleString('pt-BR',{minimumFractionDigits:2}),
+    14,
+    doc.lastAutoTable.finalY+10
+  );
+
+  doc.save("relatorio_frota.pdf");
+}
+
+function limpar(){
+  document.querySelectorAll("#sistema input").forEach(i=>i.value="");
+}
+
+/* ================= INICIALIZAÇÃO ================= */
+
+window.addEventListener("DOMContentLoaded", ()=>{
+  formatarMoeda(document.getElementById("valor"));
+  formatarMoeda(document.getElementById("despesa"));
+});
+
+window.onload = verificarSessao;
 
 </script>
 
@@ -94,29 +293,6 @@ table{width:100%;margin-top:20px;border-collapse:collapse}
 th,td{border:1px solid #ccc;padding:6px;text-align:center;font-size:14px}
 th{background:#222;color:#fff}
 .login-box{max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:10px}
-
-/* ======== BANNER ADICIONADO ======== */
-
-.topo-flex{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:20px;
-  flex-wrap:wrap;
-}
-
-.banner-box{
-  width:420px;
-  height:150px;
-  border-radius:10px;
-  overflow:hidden;
-}
-
-.banner-box img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
 </style>
 </head>
 
@@ -132,23 +308,14 @@ th{background:#222;color:#fff}
 
 <div id="sistema" class="container" style="display:none">
 
-<div class="topo-flex">
-  <div>
-    <h2>Controle Frota Mensal</h2>
-    <button onclick="logout()" style="background:#dc3545">Sair</button>
-  </div>
-
-  <div class="banner-box">
-    <img src="banner.jpg" alt="Banner">
-  </div>
-</div>
-
-<!-- RESTANTE DO SEU HTML PERMANECE EXATAMENTE IGUAL -->
+<h2>Controle Frota Mensal</h2>
+<button onclick="logout()" style="background:#dc3545">Sair</button>
 
 <h3>Cadastrar Veículo</h3>
 <input id="placa" placeholder="Placa">
 <input id="modelo" placeholder="Modelo">
 <button onclick="cadastrarVeiculo()">Salvar</button>
+<button onclick="excluirVeiculo()" style="background:#dc3545">Excluir Veículo</button>
 
 <h3>Novo Lançamento</h3>
 
@@ -164,7 +331,7 @@ th{background:#222;color:#fff}
 <input id="despesa" placeholder="Despesa (R$)" inputmode="numeric">
 
 <button onclick="cadastrarLancamento()">Salvar</button>
-<button onclick="gerarPDF()" style="background:#007bff">Gerar PDF Geral</button>
+<button onclick="gerarPDF()" style="background:#007bff">Gerar PDF</button>
 
 <table>
 <thead>
