@@ -188,7 +188,9 @@ async function carregarLancamentos(){
   });
 
   totalSpan.innerText = total.toLocaleString('pt-BR',{minimumFractionDigits:2});
+atualizarFiltroMes();
 }
+
 
 window.excluirLancamento = async function(id){
   if(!confirm("Excluir este lançamento?")) return;
@@ -350,6 +352,78 @@ window.addEventListener("DOMContentLoaded", ()=>{
   formatarMoeda(document.getElementById("despesa"));
 });
 
+/* ================= FILTRO MÊS ================= */
+
+function atualizarFiltroMes(){
+  const mesesUnicos = [...new Set(dadosAtuais.map(l => l.mes))];
+
+  mesFiltro.innerHTML = `<option value="">Selecionar Mês</option>`;
+
+  mesesUnicos.forEach(m=>{
+    mesFiltro.innerHTML += `<option value="${m}">${m}</option>`;
+  });
+}
+
+window.gerarPDFMes = function(){
+
+  const mesSelecionado = mesFiltro.value;
+  if(!mesSelecionado) return alert("Selecione um mês");
+
+  const dadosFiltrados = dadosAtuais.filter(l => l.mes === mesSelecionado);
+
+  if(dadosFiltrados.length === 0)
+    return alert("Não há registros para este mês.");
+
+  const doc = new jsPDF({orientation:"landscape"});
+
+  const colunas = [
+    "Modelo","Placa","Mês","KM Inicial",
+    "KM Final","KM Rodado","Cliente",
+    "Descrição","Valor","Despesa","Lucro"
+  ];
+
+  let linhas = [];
+  let total = 0;
+
+  dadosFiltrados.forEach(l=>{
+    const km = (l.km_final||0)-(l.km_inicial||0);
+    const lucro = (l.valor||0)-(l.despesa||0);
+    total += lucro;
+
+    linhas.push([
+      l.veiculos?.modelo||'',
+      l.veiculos?.placa||'',
+      l.mes||'',
+      l.km_inicial||0,
+      l.km_final||0,
+      km,
+      l.cliente||'',
+      l.descricao||'',
+      "R$ "+Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})
+    ]);
+  });
+
+  doc.text("RELATÓRIO MENSAL - "+mesSelecionado.toUpperCase(),14,15);
+
+  doc.autoTable({
+    head:[colunas],
+    body:linhas,
+    startY:20,
+    styles:{fontSize:8},
+    headStyles:{fillColor:[34,34,34]}
+  });
+
+  doc.text(
+    "TOTAL DO MÊS: R$ "+total.toLocaleString('pt-BR',{minimumFractionDigits:2}),
+    14,
+    doc.lastAutoTable.finalY+10
+  );
+
+  doc.save("relatorio_"+mesSelecionado+".pdf");
+}
+
 window.onload = verificarSessao;
 
 </script>
@@ -425,7 +499,19 @@ th{background:#222;color:#fff}
 <input id="despesa" placeholder="Despesa (R$)" inputmode="numeric">
 
 <button onclick="cadastrarLancamento()">Salvar</button>
-<button onclick="gerarPDF()" style="background:#007bff">Gerar PDF</button>
+
+<select id="mesFiltro">
+  <option value="">Selecionar Mês</option>
+</select>
+
+<button onclick="gerarPDFMes()" style="background:#6f42c1">
+  PDF por Mês
+</button>
+
+<button onclick="gerarPDF()" style="background:#007bff">
+  Gerar PDF
+</button>
+
 
 <table>
 <thead>
