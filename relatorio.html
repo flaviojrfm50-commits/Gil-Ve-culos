@@ -19,24 +19,18 @@ const supabase = createClient(
 );
 
 let dadosAtuais = [];
-
-/* ================= LOGIN ELEMENTOS ================= */
-
-const loginBox = document.getElementById("loginBox");
-const sistema = document.getElementById("sistema");
+let loginBox;
+let sistema;
 
 /* ================= CONVERTER REAL ================= */
-
 function converterRealParaNumero(valorDigitado){
   if(!valorDigitado) return 0;
   return Number(valorDigitado.replace(/\./g,'').replace(',','.')) || 0;
 }
 
 /* ================= FORMATAÇÃO MOEDA ================= */
-
 function formatarMoeda(input){
-  if(!input) return; // evita erro
-
+  if(!input) return;
   input.addEventListener("input", function(e){
     let valor = e.target.value.replace(/\D/g,"");
     valor = (Number(valor) / 100).toFixed(2);
@@ -47,12 +41,7 @@ function formatarMoeda(input){
 }
 
 /* ================= LOGIN ================= */
-
 async function verificarSessao(){
-
-  const loginBox = document.getElementById("loginBox");
-  const sistema = document.getElementById("sistema");
-
   const { data: { session } } = await supabase.auth.getSession();
 
   if(session){
@@ -89,8 +78,7 @@ window.logout = async function(){
   verificarSessao();
 }
 
-/* ================= VEICULOS ================= */
-
+/* ================= VEÍCULOS ================= */
 window.cadastrarVeiculo = async function(){
   if(!placa.value || !modelo.value)
     return alert("Preencha placa e modelo");
@@ -122,7 +110,6 @@ async function carregarVeiculos(){
 }
 
 /* ================= LANÇAMENTOS ================= */
-
 window.cadastrarLancamento = async function(){
 
   if(!selectVeiculo.value || !dataInicio.value)
@@ -183,7 +170,7 @@ async function carregarLancamentos(){
       <td>R$ ${Number(l.despesa||0).toFixed(2)}</td>
       <td><b>R$ ${lucro.toFixed(2)}</b></td>
       <td>
-        <button onclick="gerarPDFLinha('${l.id}')" style="background:#007bff">Linha</button>
+        <button onclick="gerarPDFLancamento('${l.id}')" style="background:#007bff">Linha</button>
         <button onclick="gerarPDFVeiculo('${l.veiculo_id}')" style="background:#6f42c1">Veículo</button>
         <button onclick="excluirLancamento('${l.id}')" style="background:#dc3545">X</button>
       </td>
@@ -194,43 +181,38 @@ async function carregarLancamentos(){
   totalSpan.innerText = total.toFixed(2);
 }
 
-/* ================= RELATÓRIO LINHA ================= */
+/* ================= RELATÓRIO LANÇAMENTO ================= */
+window.gerarPDFLancamento = function(id){
 
-window.gerarPDFLinha = function(id){
-
-  const lancamento = dadosAtuais.find(l => l.id == id);
-  if(!lancamento) return;
+  const l = dadosAtuais.find(x => x.id == id);
+  if(!l) return;
 
   const doc = new jsPDF();
+  const km = (l.km_final||0)-(l.km_inicial||0);
+  const lucro = (l.valor||0)-(l.despesa||0);
 
-  const km = (lancamento.km_final||0)-(lancamento.km_inicial||0);
-  const lucro = (lancamento.valor||0)-(lancamento.despesa||0);
-
-  doc.text("RELATÓRIO INDIVIDUAL DO LANÇAMENTO",14,15);
+  doc.text("RELATÓRIO DO LANÇAMENTO",14,15);
 
   doc.autoTable({
     startY:20,
     head:[["Campo","Valor"]],
     body:[
-      ["Modelo", lancamento.veiculos?.modelo||""],
-      ["Placa", lancamento.veiculos?.placa||""],
-      ["Mês", lancamento.mes||""],
-      ["KM Inicial", lancamento.km_inicial||0],
-      ["KM Final", lancamento.km_final||0],
+      ["Modelo", l.veiculos?.modelo||""],
+      ["Placa", l.veiculos?.placa||""],
+      ["Mês", l.mes||""],
       ["KM Rodado", km],
-      ["Cliente", lancamento.cliente||""],
-      ["Descrição", lancamento.descricao||""],
-      ["Valor", "R$ "+Number(lancamento.valor||0).toFixed(2)],
-      ["Despesa", "R$ "+Number(lancamento.despesa||0).toFixed(2)],
+      ["Cliente", l.cliente||""],
+      ["Descrição", l.descricao||""],
+      ["Valor", "R$ "+Number(l.valor||0).toFixed(2)],
+      ["Despesa", "R$ "+Number(l.despesa||0).toFixed(2)],
       ["Lucro", "R$ "+lucro.toFixed(2)]
     ]
   });
 
-  doc.save("relatorio_linha.pdf");
+  doc.save("relatorio_lancamento.pdf");
 }
 
 /* ================= RELATÓRIO VEÍCULO ================= */
-
 window.gerarPDFVeiculo = function(veiculoId){
 
   const dadosFiltrados = dadosAtuais.filter(
@@ -241,13 +223,10 @@ window.gerarPDFVeiculo = function(veiculoId){
     return alert("Este veículo não possui lançamentos.");
 
   const doc = new jsPDF();
-
   let total = 0;
   let linhas = [];
 
   dadosFiltrados.forEach(l=>{
-
-    const km = (l.km_final||0)-(l.km_inicial||0);
     const lucro = (l.valor||0)-(l.despesa||0);
     total += lucro;
 
@@ -285,17 +264,36 @@ function limpar(){
 }
 
 window.addEventListener("DOMContentLoaded", ()=>{
+  loginBox = document.getElementById("loginBox");
+  sistema = document.getElementById("sistema");
   formatarMoeda(document.getElementById("valor"));
   formatarMoeda(document.getElementById("despesa"));
+  verificarSessao();
 });
-
-window.onload = verificarSessao;
-
 </script>
 
 <style>
 body{font-family:Arial;background:#f4f4f4;padding:20px}
 .container{max-width:1200px;margin:auto;background:#fff;padding:20px;border-radius:10px}
+
+.topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:30px;
+  margin-bottom:25px;
+}
+
+.banner-area img{
+  width:100%;
+  max-width:500px;
+  height:180px;
+  object-fit:cover;
+  border-radius:15px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.15);
+}
+
+input,select{padding:8px;margin:5px}
 button{padding:6px 10px;color:#fff;border:none;border-radius:5px;cursor:pointer}
 table{width:100%;margin-top:20px;border-collapse:collapse}
 th,td{border:1px solid #ccc;padding:6px;text-align:center;font-size:14px}
@@ -303,7 +301,72 @@ th{background:#222;color:#fff}
 .login-box{max-width:400px;margin:auto;background:#fff;padding:20px;border-radius:10px}
 </style>
 </head>
+
 <body>
-<!-- Seu HTML permanece igual abaixo -->
+
+<div id="loginBox" class="login-box">
+<h2>Login</h2>
+<input id="email" placeholder="Email">
+<input id="senha" type="password" placeholder="Senha"><br>
+<button onclick="login()">Entrar</button>
+<button onclick="cadastrarConta()">Criar Conta</button>
+</div>
+
+<div id="sistema" class="container" style="display:none">
+
+<div class="topo">
+  <div>
+    <h2>Controle Frota Mensal</h2>
+    <button onclick="logout()" style="background:#dc3545">Sair</button>
+  </div>
+  <div class="banner-area">
+    <img src="banner.jpg" alt="Banner">
+  </div>
+</div>
+
+<h3>Cadastrar Veículo</h3>
+<input id="placa" placeholder="Placa">
+<input id="modelo" placeholder="Modelo">
+<button onclick="cadastrarVeiculo()">Salvar</button>
+
+<h3>Novo Lançamento</h3>
+
+<select id="selectVeiculo"></select>
+<input type="date" id="dataInicio">
+<input type="date" id="dataFim">
+<input id="cliente" placeholder="Cliente">
+<input id="descricao" placeholder="Descrição">
+<input type="number" id="kmInicial" placeholder="KM Inicial">
+<input type="number" id="kmFinal" placeholder="KM Final">
+<input type="number" id="quantidade" placeholder="Quantidade">
+<input id="valor" placeholder="Valor (R$)" inputmode="numeric">
+<input id="despesa" placeholder="Despesa (R$)" inputmode="numeric">
+
+<button onclick="cadastrarLancamento()">Salvar</button>
+
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Placa</th>
+<th>Mês</th>
+<th>KM Inicial</th>
+<th>KM Final</th>
+<th>KM Rodado</th>
+<th>Cliente</th>
+<th>Descrição</th>
+<th>Valor</th>
+<th>Despesa</th>
+<th>Lucro</th>
+<th>Ação</th>
+</tr>
+</thead>
+<tbody id="tabela"></tbody>
+</table>
+
+<h3>Total Lucro: R$ <span id="totalSpan">0.00</span></h3>
+
+</div>
+
 </body>
 </html>
