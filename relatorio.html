@@ -167,13 +167,19 @@ async function carregarLancamentos(){
 
   dadosAtuais = data || [];
   tabela.innerHTML="";
-  let total = 0;
+  let totalValor = 0;
+let totalDespesa = 0;
+let totalLucro = 0;
+
 
   dadosAtuais.forEach(l=>{
 
     const km = (l.km_final||0)-(l.km_inicial||0);
     const lucro = (l.valor||0)-(l.despesa||0);
-    total += lucro;
+    totalValor += Number(l.valor || 0);
+    totalDespesa += Number(l.despesa || 0);
+    totalLucro += lucro;
+
 
     tabela.innerHTML += `
     <tr>
@@ -196,7 +202,10 @@ async function carregarLancamentos(){
     </tr>`;
   });
 
-  totalSpan.innerText = total.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  totalValorSpan.innerText = totalValor.toLocaleString('pt-BR',{minimumFractionDigits:2});
+totalDespesaSpan.innerText = totalDespesa.toLocaleString('pt-BR',{minimumFractionDigits:2});
+totalLucroSpan.innerText = totalLucro.toLocaleString('pt-BR',{minimumFractionDigits:2});
+
   atualizarFiltroMes();
 }
 
@@ -552,7 +561,10 @@ th{background:#222;color:#fff}
 <tbody id="tabela"></tbody>
 </table>
 
-<h3>Total Lucro: R$ <span id="totalSpan">0,00</span></h3>
+<h3>Total Valor: R$ <span id="totalValorSpan">0,00</span></h3>
+<h3>Total Despesa: R$ <span id="totalDespesaSpan">0,00</span></h3>
+<h3><b>Total Lucro: R$ <span id="totalLucroSpan">0,00</span></b></h3>
+
 
 </div>
 
