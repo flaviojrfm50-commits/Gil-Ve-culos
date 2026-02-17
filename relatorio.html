@@ -20,13 +20,17 @@ const supabase = createClient(
 
 let dadosAtuais = [];
 
-/* ================= CONVERTER REAL PARA NÚMERO ================= */
+/* ================= CONVERTER REAL ================= */
+
 function converterRealParaNumero(valorDigitado){
   if(!valorDigitado) return 0;
-  return Number(valorDigitado.replace(/\./g,'').replace(',','.')) || 0;
+  return Number(
+    valorDigitado.replace(/\./g,'').replace(',','.')
+  ) || 0;
 }
 
-/* ================= FORMATAÇÃO AUTOMÁTICA MOEDA ================= */
+/* ================= FORMATAR MOEDA ================= */
+
 function formatarMoeda(input){
   if(!input) return;
   input.addEventListener("input", function(e){
@@ -39,13 +43,12 @@ function formatarMoeda(input){
 }
 
 /* ================= LOGIN ================= */
+
 async function verificarSessao(){
+  const { data: { session } } = await supabase.auth.getSession();
+
   const loginBox = document.getElementById("loginBox");
   const sistema = document.getElementById("sistema");
-
-  if(!loginBox || !sistema) return;
-
-  const { data: { session } } = await supabase.auth.getSession();
 
   if(session){
     loginBox.style.display="none";
@@ -82,6 +85,7 @@ window.logout = async function(){
 }
 
 /* ================= VEICULOS ================= */
+
 window.cadastrarVeiculo = async function(){
   if(!placa.value || !modelo.value)
     return alert("Preencha placa e modelo");
@@ -100,7 +104,6 @@ window.cadastrarVeiculo = async function(){
 
 async function carregarVeiculos(){
   const { data } = await supabase.from("veiculos").select("*");
-
   selectVeiculo.innerHTML="<option value=''>Selecione</option>";
 
   data?.forEach(v=>{
@@ -113,6 +116,7 @@ async function carregarVeiculos(){
 }
 
 /* ================= LANÇAMENTOS ================= */
+
 window.cadastrarLancamento = async function(){
 
   if(!selectVeiculo.value || !dataInicio.value)
@@ -149,7 +153,6 @@ async function carregarLancamentos(){
     .order("created_at",{ascending:false});
 
   dadosAtuais = data || [];
-
   tabela.innerHTML="";
   let total = 0;
 
@@ -175,7 +178,6 @@ async function carregarLancamentos(){
       <td>
         <button onclick="gerarPDFLancamento('${l.id}')" style="background:#007bff">Linha</button>
         <button onclick="gerarPDFVeiculo('${l.veiculo_id}')" style="background:#6f42c1">Veículo</button>
-        <button onclick="excluirLancamento('${l.id}')" style="background:#dc3545">X</button>
       </td>
     </tr>
     `;
@@ -185,21 +187,14 @@ async function carregarLancamentos(){
 }
 
 /* ================= PDF GERAL ================= */
+
 window.gerarPDF = function(){
-
-  const doc = new jsPDF();
-
-  const colunas = [
-    "Modelo","Placa","Mês","KM Inicial",
-    "KM Final","KM Rodado","Cliente",
-    "Descrição","Valor","Despesa","Lucro"
-  ];
-
+  const doc = new jsPDF({orientation:"landscape"});
+  const colunas = ["Modelo","Placa","Mês","KM Inicial","KM Final","KM Rodado","Cliente","Descrição","Valor","Despesa","Lucro"];
   let linhas = [];
   let total = 0;
 
   dadosAtuais.forEach(l=>{
-
     const km = (l.km_final||0)-(l.km_inicial||0);
     const lucro = (l.valor||0)-(l.despesa||0);
     total += lucro;
@@ -219,29 +214,21 @@ window.gerarPDF = function(){
     ]);
   });
 
-  doc.text("RELATÓRIO CONTROLE FROTA",14,15);
-
-  doc.autoTable({
-    head:[colunas],
-    body:linhas,
-    startY:20
-  });
-
-  doc.text(
-    "TOTAL LUCRO: R$ "+total.toLocaleString('pt-BR',{minimumFractionDigits:2}),
-    14,
-    doc.lastAutoTable.finalY+10
-  );
-
-  doc.save("relatorio_frota.pdf");
+  doc.text("RELATÓRIO GERAL",14,15);
+  doc.autoTable({ head:[colunas], body:linhas, startY:20, styles:{fontSize:8} });
+  doc.text("TOTAL LUCRO: R$ "+total.toLocaleString('pt-BR',{minimumFractionDigits:2}),14,doc.lastAutoTable.finalY+8);
+  doc.save("relatorio_geral.pdf");
 }
 
 /* ================= PDF LANÇAMENTO ================= */
+
 window.gerarPDFLancamento = function(id){
+
   const l = dadosAtuais.find(x => x.id == id);
   if(!l) return;
 
   const doc = new jsPDF();
+
   const km = (l.km_final||0)-(l.km_inicial||0);
   const lucro = (l.valor||0)-(l.despesa||0);
 
@@ -254,6 +241,8 @@ window.gerarPDFLancamento = function(id){
       ["Modelo", l.veiculos?.modelo||""],
       ["Placa", l.veiculos?.placa||""],
       ["Mês", l.mes||""],
+      ["KM Inicial", l.km_inicial||0],
+      ["KM Final", l.km_final||0],
       ["KM Rodado", km],
       ["Cliente", l.cliente||""],
       ["Descrição", l.descricao||""],
@@ -266,22 +255,21 @@ window.gerarPDFLancamento = function(id){
   doc.save("relatorio_lancamento.pdf");
 }
 
-/* ================= PDF VEÍCULO ================= */
+/* ================= PDF VEÍCULO AJUSTADO ================= */
+
 window.gerarPDFVeiculo = function(veiculoId){
 
   const dadosFiltrados = dadosAtuais.filter(l => l.veiculo_id == veiculoId);
-
   if(dadosFiltrados.length === 0)
     return alert("Este veículo não possui lançamentos.");
 
-  const doc = new jsPDF();
+  const doc = new jsPDF({
+    orientation: "landscape",
+    unit: "mm",
+    format: "a4"
+  });
 
-  const colunas = [
-    "Modelo","Placa","Mês","KM Inicial",
-    "KM Final","KM Rodado","Cliente",
-    "Descrição","Valor","Despesa","Lucro"
-  ];
-
+  const colunas = ["Modelo","Placa","Mês","KM Inicial","KM Final","KM Rodado","Cliente","Descrição","Valor","Despesa","Lucro"];
   let linhas = [];
   let total = 0;
 
@@ -305,62 +293,42 @@ window.gerarPDFVeiculo = function(veiculoId){
     ]);
   });
 
+  doc.setFontSize(16);
   doc.text("RELATÓRIO DO VEÍCULO",14,15);
 
   doc.autoTable({
     head:[colunas],
     body:linhas,
-    startY:20
+    startY:22,
+    styles:{ fontSize:8, cellPadding:2 },
+    theme:"grid"
   });
 
-  doc.text(
-    "TOTAL LUCRO: R$ "+total.toLocaleString('pt-BR',{minimumFractionDigits:2}),
+  doc.setFontSize(12);
+  doc.text("TOTAL LUCRO: R$ "+total.toLocaleString('pt-BR',{minimumFractionDigits:2}),
     14,
-    doc.lastAutoTable.finalY+10
+    doc.lastAutoTable.finalY+8
   );
 
   doc.save("relatorio_veiculo.pdf");
-}
-
-window.excluirLancamento = async function(id){
-  if(!confirm("Excluir este lançamento?")) return;
-  await supabase.from("lancamentos").delete().eq("id", id);
-  carregarLancamentos();
 }
 
 function limpar(){
   document.querySelectorAll("#sistema input").forEach(i=>i.value="");
 }
 
-/* ================= INICIALIZAÇÃO ================= */
 window.addEventListener("DOMContentLoaded", ()=>{
   formatarMoeda(document.getElementById("valor"));
   formatarMoeda(document.getElementById("despesa"));
-  verificarSessao();
 });
+
+window.onload = verificarSessao;
+
 </script>
 
 <style>
 body{font-family:Arial;background:#f4f4f4;padding:20px}
 .container{max-width:1200px;margin:auto;background:#fff;padding:20px;border-radius:10px}
-
-.topo{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:30px;
-  margin-bottom:25px;
-}
-
-.banner-area img{
-  width:100%;
-  max-width:450px;
-  height:160px;
-  object-fit:cover;
-  border-radius:12px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.15);
-}
-
 h2{text-align:center}
 input,select{padding:8px;margin:5px}
 button{padding:8px 12px;background:#28a745;color:#fff;border:none;border-radius:5px}
@@ -383,21 +351,13 @@ th{background:#222;color:#fff}
 
 <div id="sistema" class="container" style="display:none">
 
-<div class="topo">
-  <div>
-    <h2>Controle Frota Mensal</h2>
-    <button onclick="logout()" style="background:#dc3545">Sair</button>
-  </div>
-  <div class="banner-area">
-    <img src="banner.jpg" alt="Banner">
-  </div>
-</div>
+<h2>Controle Frota Mensal</h2>
+<button onclick="logout()" style="background:#dc3545">Sair</button>
 
 <h3>Cadastrar Veículo</h3>
 <input id="placa" placeholder="Placa">
 <input id="modelo" placeholder="Modelo">
 <button onclick="cadastrarVeiculo()">Salvar</button>
-<button onclick="excluirVeiculo()" style="background:#dc3545">Excluir Veículo</button>
 
 <h3>Novo Lançamento</h3>
 
@@ -413,7 +373,7 @@ th{background:#222;color:#fff}
 <input id="despesa" placeholder="Despesa (R$)" inputmode="numeric">
 
 <button onclick="cadastrarLancamento()">Salvar</button>
-<button onclick="gerarPDF()" style="background:#007bff">Gerar PDF</button>
+<button onclick="gerarPDF()" style="background:#007bff">Gerar PDF Geral</button>
 
 <table>
 <thead>
