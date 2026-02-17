@@ -220,7 +220,7 @@ window.excluirLancamento = async function(id){
   carregarLancamentos();
 }
 
-/* ================= PDF ================= */
+/* ================= PDF AJUSTADO PADRÃO BRASIL ================= */
 
 window.gerarPDF = function(){
 
@@ -250,9 +250,9 @@ window.gerarPDF = function(){
       km,
       l.cliente||'',
       l.descricao||'',
-      "R$ "+Number(l.valor||0).toFixed(2),
-      "R$ "+Number(l.despesa||0).toFixed(2),
-      "R$ "+lucro.toFixed(2)
+      "R$ "+Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})
     ]);
   });
 
@@ -267,7 +267,7 @@ window.gerarPDF = function(){
   });
 
   doc.text(
-    "TOTAL LUCRO: R$ "+total.toFixed(2),
+    "TOTAL LUCRO: R$ "+total.toLocaleString('pt-BR',{minimumFractionDigits:2}),
     14,
     doc.lastAutoTable.finalY+10
   );
