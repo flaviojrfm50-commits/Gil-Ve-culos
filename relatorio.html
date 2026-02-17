@@ -20,16 +20,35 @@ const supabase = createClient(
 
 let dadosAtuais = [];
 
-/* ================= FUNÇÃO CONVERSÃO REAL ================= */
+/* ================= CONVERTER REAL PARA NÚMERO ================= */
 
 function converterRealParaNumero(valorDigitado){
   if(!valorDigitado) return 0;
 
   return Number(
     valorDigitado
-      .replace(/\./g,'')   // remove pontos de milhar
-      .replace(',','.')    // troca vírgula por ponto
+      .replace(/\./g,'')
+      .replace(',','.')
   ) || 0;
+}
+
+/* ================= FORMATAÇÃO AUTOMÁTICA MOEDA ================= */
+
+function formatarMoeda(input){
+
+  input.addEventListener("input", function(e){
+
+    let valor = e.target.value.replace(/\D/g,"");
+
+    valor = (Number(valor) / 100).toFixed(2);
+
+    valor = valor.replace(".",",");
+
+    valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g,".");
+
+    e.target.value = valor;
+  });
+
 }
 
 /* ================= LOGIN ================= */
@@ -260,6 +279,13 @@ function limpar(){
   document.querySelectorAll("#sistema input").forEach(i=>i.value="");
 }
 
+/* ================= INICIALIZAÇÃO ================= */
+
+window.addEventListener("DOMContentLoaded", ()=>{
+  formatarMoeda(document.getElementById("valor"));
+  formatarMoeda(document.getElementById("despesa"));
+});
+
 window.onload = verificarSessao;
 
 </script>
@@ -308,8 +334,8 @@ th{background:#222;color:#fff}
 <input type="number" id="kmInicial" placeholder="KM Inicial">
 <input type="number" id="kmFinal" placeholder="KM Final">
 <input type="number" id="quantidade" placeholder="Quantidade">
-<input id="valor" placeholder="Valor (R$)" inputmode="decimal">
-<input id="despesa" placeholder="Despesa (R$)" inputmode="decimal">
+<input id="valor" placeholder="Valor (R$)" inputmode="numeric">
+<input id="despesa" placeholder="Despesa (R$)" inputmode="numeric">
 
 <button onclick="cadastrarLancamento()">Salvar</button>
 <button onclick="gerarPDF()" style="background:#007bff">Gerar PDF</button>
