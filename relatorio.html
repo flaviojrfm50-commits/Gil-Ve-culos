@@ -19,16 +19,14 @@ const supabase = createClient(
 );
 
 let dadosAtuais = [];
-let loginBox;
-let sistema;
 
-/* ================= CONVERTER REAL ================= */
+/* ================= CONVERTER REAL PARA NÚMERO ================= */
 function converterRealParaNumero(valorDigitado){
   if(!valorDigitado) return 0;
   return Number(valorDigitado.replace(/\./g,'').replace(',','.')) || 0;
 }
 
-/* ================= FORMATAÇÃO MOEDA ================= */
+/* ================= FORMATAÇÃO AUTOMÁTICA MOEDA ================= */
 function formatarMoeda(input){
   if(!input) return;
   input.addEventListener("input", function(e){
@@ -42,6 +40,11 @@ function formatarMoeda(input){
 
 /* ================= LOGIN ================= */
 async function verificarSessao(){
+  const loginBox = document.getElementById("loginBox");
+  const sistema = document.getElementById("sistema");
+
+  if(!loginBox || !sistema) return;
+
   const { data: { session } } = await supabase.auth.getSession();
 
   if(session){
@@ -78,7 +81,7 @@ window.logout = async function(){
   verificarSessao();
 }
 
-/* ================= VEÍCULOS ================= */
+/* ================= VEICULOS ================= */
 window.cadastrarVeiculo = async function(){
   if(!placa.value || !modelo.value)
     return alert("Preencha placa e modelo");
@@ -166,9 +169,9 @@ async function carregarLancamentos(){
       <td>${km}</td>
       <td>${l.cliente||''}</td>
       <td>${l.descricao||''}</td>
-      <td>R$ ${Number(l.valor||0).toFixed(2)}</td>
-      <td>R$ ${Number(l.despesa||0).toFixed(2)}</td>
-      <td><b>R$ ${lucro.toFixed(2)}</b></td>
+      <td>R$ ${Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td>R$ ${Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td><b>R$ ${lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})}</b></td>
       <td>
         <button onclick="gerarPDFLancamento('${l.id}')" style="background:#007bff">Linha</button>
         <button onclick="gerarPDFVeiculo('${l.veiculo_id}')" style="background:#6f42c1">Veículo</button>
@@ -178,12 +181,63 @@ async function carregarLancamentos(){
     `;
   });
 
-  totalSpan.innerText = total.toFixed(2);
+  totalSpan.innerText = total.toLocaleString('pt-BR',{minimumFractionDigits:2});
 }
 
-/* ================= RELATÓRIO LANÇAMENTO ================= */
-window.gerarPDFLancamento = function(id){
+/* ================= PDF GERAL ================= */
+window.gerarPDF = function(){
 
+  const doc = new jsPDF();
+
+  const colunas = [
+    "Modelo","Placa","Mês","KM Inicial",
+    "KM Final","KM Rodado","Cliente",
+    "Descrição","Valor","Despesa","Lucro"
+  ];
+
+  let linhas = [];
+  let total = 0;
+
+  dadosAtuais.forEach(l=>{
+
+    const km = (l.km_final||0)-(l.km_inicial||0);
+    const lucro = (l.valor||0)-(l.despesa||0);
+    total += lucro;
+
+    linhas.push([
+      l.veiculos?.modelo||'',
+      l.veiculos?.placa||'',
+      l.mes||'',
+      l.km_inicial||0,
+      l.km_final||0,
+      km,
+      l.cliente||'',
+      l.descricao||'',
+      "R$ "+Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})
+    ]);
+  });
+
+  doc.text("RELATÓRIO CONTROLE FROTA",14,15);
+
+  doc.autoTable({
+    head:[colunas],
+    body:linhas,
+    startY:20
+  });
+
+  doc.text(
+    "TOTAL LUCRO: R$ "+total.toLocaleString('pt-BR',{minimumFractionDigits:2}),
+    14,
+    doc.lastAutoTable.finalY+10
+  );
+
+  doc.save("relatorio_frota.pdf");
+}
+
+/* ================= PDF LANÇAMENTO ================= */
+window.gerarPDFLancamento = function(id){
   const l = dadosAtuais.find(x => x.id == id);
   if(!l) return;
 
@@ -203,52 +257,67 @@ window.gerarPDFLancamento = function(id){
       ["KM Rodado", km],
       ["Cliente", l.cliente||""],
       ["Descrição", l.descricao||""],
-      ["Valor", "R$ "+Number(l.valor||0).toFixed(2)],
-      ["Despesa", "R$ "+Number(l.despesa||0).toFixed(2)],
-      ["Lucro", "R$ "+lucro.toFixed(2)]
+      ["Valor", "R$ "+Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})],
+      ["Despesa", "R$ "+Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2})],
+      ["Lucro", "R$ "+lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})]
     ]
   });
 
   doc.save("relatorio_lancamento.pdf");
 }
 
-/* ================= RELATÓRIO VEÍCULO ================= */
+/* ================= PDF VEÍCULO ================= */
 window.gerarPDFVeiculo = function(veiculoId){
 
-  const dadosFiltrados = dadosAtuais.filter(
-    l => l.veiculo_id == veiculoId
-  );
+  const dadosFiltrados = dadosAtuais.filter(l => l.veiculo_id == veiculoId);
 
   if(dadosFiltrados.length === 0)
     return alert("Este veículo não possui lançamentos.");
 
   const doc = new jsPDF();
-  let total = 0;
+
+  const colunas = [
+    "Modelo","Placa","Mês","KM Inicial",
+    "KM Final","KM Rodado","Cliente",
+    "Descrição","Valor","Despesa","Lucro"
+  ];
+
   let linhas = [];
+  let total = 0;
 
   dadosFiltrados.forEach(l=>{
+    const km = (l.km_final||0)-(l.km_inicial||0);
     const lucro = (l.valor||0)-(l.despesa||0);
     total += lucro;
 
     linhas.push([
-      l.mes,
-      l.cliente,
-      l.descricao,
-      "R$ "+Number(l.valor||0).toFixed(2),
-      "R$ "+Number(l.despesa||0).toFixed(2),
-      "R$ "+lucro.toFixed(2)
+      l.veiculos?.modelo||'',
+      l.veiculos?.placa||'',
+      l.mes||'',
+      l.km_inicial||0,
+      l.km_final||0,
+      km,
+      l.cliente||'',
+      l.descricao||'',
+      "R$ "+Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2}),
+      "R$ "+lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})
     ]);
   });
 
   doc.text("RELATÓRIO DO VEÍCULO",14,15);
 
   doc.autoTable({
-    startY:20,
-    head:[["Mês","Cliente","Descrição","Valor","Despesa","Lucro"]],
-    body:linhas
+    head:[colunas],
+    body:linhas,
+    startY:20
   });
 
-  doc.text("TOTAL: R$ "+total.toFixed(2),14,doc.lastAutoTable.finalY+10);
+  doc.text(
+    "TOTAL LUCRO: R$ "+total.toLocaleString('pt-BR',{minimumFractionDigits:2}),
+    14,
+    doc.lastAutoTable.finalY+10
+  );
 
   doc.save("relatorio_veiculo.pdf");
 }
@@ -263,9 +332,8 @@ function limpar(){
   document.querySelectorAll("#sistema input").forEach(i=>i.value="");
 }
 
+/* ================= INICIALIZAÇÃO ================= */
 window.addEventListener("DOMContentLoaded", ()=>{
-  loginBox = document.getElementById("loginBox");
-  sistema = document.getElementById("sistema");
   formatarMoeda(document.getElementById("valor"));
   formatarMoeda(document.getElementById("despesa"));
   verificarSessao();
@@ -286,15 +354,16 @@ body{font-family:Arial;background:#f4f4f4;padding:20px}
 
 .banner-area img{
   width:100%;
-  max-width:500px;
-  height:180px;
+  max-width:450px;
+  height:160px;
   object-fit:cover;
-  border-radius:15px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.15);
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.15);
 }
 
+h2{text-align:center}
 input,select{padding:8px;margin:5px}
-button{padding:6px 10px;color:#fff;border:none;border-radius:5px;cursor:pointer}
+button{padding:8px 12px;background:#28a745;color:#fff;border:none;border-radius:5px}
 table{width:100%;margin-top:20px;border-collapse:collapse}
 th,td{border:1px solid #ccc;padding:6px;text-align:center;font-size:14px}
 th{background:#222;color:#fff}
@@ -328,6 +397,7 @@ th{background:#222;color:#fff}
 <input id="placa" placeholder="Placa">
 <input id="modelo" placeholder="Modelo">
 <button onclick="cadastrarVeiculo()">Salvar</button>
+<button onclick="excluirVeiculo()" style="background:#dc3545">Excluir Veículo</button>
 
 <h3>Novo Lançamento</h3>
 
@@ -343,6 +413,7 @@ th{background:#222;color:#fff}
 <input id="despesa" placeholder="Despesa (R$)" inputmode="numeric">
 
 <button onclick="cadastrarLancamento()">Salvar</button>
+<button onclick="gerarPDF()" style="background:#007bff">Gerar PDF</button>
 
 <table>
 <thead>
@@ -364,7 +435,7 @@ th{background:#222;color:#fff}
 <tbody id="tabela"></tbody>
 </table>
 
-<h3>Total Lucro: R$ <span id="totalSpan">0.00</span></h3>
+<h3>Total Lucro: R$ <span id="totalSpan">0,00</span></h3>
 
 </div>
 
