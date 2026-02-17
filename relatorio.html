@@ -20,6 +20,18 @@ const supabase = createClient(
 
 let dadosAtuais = [];
 
+/* ================= FUNÇÃO CONVERSÃO REAL ================= */
+
+function converterRealParaNumero(valorDigitado){
+  if(!valorDigitado) return 0;
+
+  return Number(
+    valorDigitado
+      .replace(/\./g,'')   // remove pontos de milhar
+      .replace(',','.')    // troca vírgula por ponto
+  ) || 0;
+}
+
 /* ================= LOGIN ================= */
 
 async function verificarSessao(){
@@ -126,8 +138,8 @@ window.cadastrarLancamento = async function(){
     km_inicial: Number(kmInicial.value)||0,
     km_final: Number(kmFinal.value)||0,
     quantidade: Number(quantidade.value)||0,
-    valor: Number(valor.value)||0,
-    despesa: Number(despesa.value)||0,
+    valor: converterRealParaNumero(valor.value),
+    despesa: converterRealParaNumero(despesa.value),
     data_inicio: dataInicio.value,
     data_fim: dataFim.value,
     mes
@@ -296,8 +308,8 @@ th{background:#222;color:#fff}
 <input type="number" id="kmInicial" placeholder="KM Inicial">
 <input type="number" id="kmFinal" placeholder="KM Final">
 <input type="number" id="quantidade" placeholder="Quantidade">
-<input type="number" id="valor" placeholder="Valor">
-<input type="number" id="despesa" placeholder="Despesa">
+<input id="valor" placeholder="Valor (R$)" inputmode="decimal">
+<input id="despesa" placeholder="Despesa (R$)" inputmode="decimal">
 
 <button onclick="cadastrarLancamento()">Salvar</button>
 <button onclick="gerarPDF()" style="background:#007bff">Gerar PDF</button>
