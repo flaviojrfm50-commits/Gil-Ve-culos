@@ -409,10 +409,61 @@ window.addEventListener("DOMContentLoaded", ()=>{
   document.getElementById("selectVeiculo")
     .addEventListener("change", carregarLancamentos);
 
+  document.getElementById("mesFiltro")
+    .addEventListener("change", filtrarPorMes);
+
 });
 
+function filtrarPorMes(){
 
+  const mesSelecionado = mesFiltro.value;
 
+  let dadosFiltrados = dadosAtuais;
+
+  if(mesSelecionado){
+    dadosFiltrados = dadosAtuais.filter(l => l.mes === mesSelecionado);
+  }
+
+  tabela.innerHTML = "";
+
+  let totalValor = 0;
+  let totalDespesa = 0;
+  let totalLucro = 0;
+
+  dadosFiltrados.forEach(l=>{
+
+    const km = (l.km_final||0)-(l.km_inicial||0);
+    const lucro = (l.valor||0)-(l.despesa||0);
+
+    totalValor += Number(l.valor || 0);
+    totalDespesa += Number(l.despesa || 0);
+    totalLucro += lucro;
+
+    tabela.innerHTML += `
+    <tr>
+      <td>${l.veiculos?.modelo||''}</td>
+      <td>${l.veiculos?.placa||''}</td>
+      <td>${l.mes||''}</td>
+      <td>${l.km_inicial||0}</td>
+      <td>${l.km_final||0}</td>
+      <td>${km}</td>
+      <td>${l.cliente||''}</td>
+      <td>${l.descricao||''}</td>
+      <td>R$ ${Number(l.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td>R$ ${Number(l.despesa||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td><b>R$ ${lucro.toLocaleString('pt-BR',{minimumFractionDigits:2})}</b></td>
+      <td>
+        <button onclick="gerarPDFLancamento('${l.id}')" style="background:#007bff">PDF Linha</button>
+        <button onclick="gerarPDFVeiculo('${l.veiculo_id}')" style="background:#6f42c1">PDF Veículo</button>
+        <button onclick="excluirLancamento('${l.id}')" style="background:#dc3545">X</button>
+      </td>
+    </tr>`;
+  });
+
+  totalValorSpan.innerText = totalValor.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  totalDespesaSpan.innerText = totalDespesa.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  totalLucroSpan.innerText = totalLucro.toLocaleString('pt-BR',{minimumFractionDigits:2});
+}
 
 window.gerarPDFMes = function(){
 
