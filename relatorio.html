@@ -128,8 +128,9 @@ window.cadastrarLancamento = async function(){
 
   const mes = new Date(dataInicio.value)
     .toLocaleString('pt-BR', { month:'long' });
-
-  const { error } = await supabase.from("lancamentos").insert({
+const { data, error } = await supabase
+  .from("lancamentos")
+  .insert({
     veiculo_id: selectVeiculo.value,
     cliente: cliente.value,
     descricao: descricao.value,
@@ -141,7 +142,16 @@ window.cadastrarLancamento = async function(){
     data_inicio: dataInicio.value,
     data_fim: dataFim.value,
     mes
-  });
+  })
+  .select();   // 👈 ESSA LINHA É O SEGREDO
+
+if (error) {
+  console.error("ERRO AO SALVAR:", error);
+  alert("Erro ao salvar: " + error.message);
+  return;
+}
+
+console.log("SALVO NO BANCO:", data);
 
   if(error) return alert(error.message);
 
